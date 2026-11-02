@@ -1,9 +1,9 @@
 <!doctype html><html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Bảng Trụ MEGAMU</title>
+<title>Bảng Tower MEGAMU</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
 <style>
 /* Phong cách: bảng điều khiển tối, nền xanh than, một màu nhấn xanh dương; vàng, đỏ, xanh lá chỉ dùng cho trạng thái.
-   Layout: thanh công cụ, bộ lọc, danh sách xếp theo giờ hết hạn chia theo ngày; form thêm trụ mở trong hộp thoại. */
+   Layout: thanh công cụ, bộ lọc, danh sách xếp theo giờ hết hạn chia theo ngày; form thêm Tower mở trong hộp thoại. */
 :root {
   --bg: #0a0e16;
   --surface: #111724;
@@ -110,7 +110,7 @@ details.past .row { opacity: .7; }
 .foot .lg { display: flex; flex-wrap: wrap; gap: 6px 16px; }
 .dot { display: inline-block; width: 9px; height: 9px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
 
-/* hộp thoại thêm trụ */
+/* hộp thoại thêm Tower */
 .scrim { position: fixed; inset: 0; background: rgba(3, 6, 11, 0.72); z-index: 30; display: grid; place-items: start center; overflow-y: auto; padding: 24px 12px; }
 .panel { width: min(680px, 100%); background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 22px; display: grid; gap: 16px; }
 .phead { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; padding-bottom: 14px; border-bottom: 1px solid var(--line); }
@@ -161,8 +161,8 @@ details.past .row { opacity: .7; }
   <header class="top">
     <div>
       <div class="eyebrow">MEGAMU · Farm Tower</div>
-      <h1>Bảng Trụ</h1>
-      <p class="sub">Trụ hết hạn sớm nhất ở trên cùng. Mọi người cùng xem một danh sách.</p>
+      <h1>Bảng Tower</h1>
+      <p class="sub">Tower hết hạn sớm nhất ở trên cùng. Mọi người cùng xem một danh sách.</p>
     </div>
     <div class="clockbox">
       <div class="lbl">Giờ Việt Nam · UTC+7</div>
@@ -172,7 +172,7 @@ details.past .row { opacity: .7; }
   </header>
 
   <div class="bar">
-    <button class="btn primary" id="addBtn" type="button">+ Thêm trụ</button>
+    <button class="btn primary" id="addBtn" type="button">+ Thêm Tower</button>
     <label style="display:flex; align-items:center; gap:6px; font-size:13px; color:var(--muted);">Nhắc trước
       <select id="alertMin" class="btn small" aria-label="Nhắc trước bao nhiêu phút">
         <option value="0">Tắt</option><option value="5">5 phút</option><option value="10">10 phút</option><option value="15">15 phút</option><option value="20">20 phút</option>
@@ -183,7 +183,7 @@ details.past .row { opacity: .7; }
   </div>
 
   <section class="filters" aria-label="Bộ lọc">
-    <div class="f"><label for="q">Tìm kiếm</label><input id="q" type="search" placeholder="Map, chủ trụ, server, toạ độ…" autocomplete="off"></div>
+    <div class="f"><label for="q">Tìm kiếm</label><input id="q" type="search" placeholder="Map, chủ Tower, server, toạ độ…" autocomplete="off"></div>
     <div class="f"><label for="fSv">Server</label><select id="fSv"><option value="">Tất cả</option></select></div>
     <div class="f"><label for="fMap">Map</label><select id="fMap"><option value="">Tất cả map</option></select></div>
     <div class="f"><label for="fPh">Phe</label><select id="fPh"><option value="">Tất cả phe</option><option value="enemy">Enemy</option><option value="ally">Ally</option></select></div>
@@ -191,9 +191,9 @@ details.past .row { opacity: .7; }
       <select id="fT"><option value="">Tất cả</option><option value="15">≤ 15 phút</option><option value="60">≤ 1 giờ</option><option value="180">≤ 3 giờ</option><option value="360">≤ 6 giờ</option></select></div>
   </section>
 
-  <section class="list" aria-label="Danh sách trụ">
+  <section class="list" aria-label="Danh sách Tower">
     <div class="cols" aria-hidden="true">
-      <div>Server · Map</div><div>Chủ trụ</div><div>Hết hạn</div><div>Còn lại</div><div>Cần chuẩn bị</div>
+      <div>Server · Map</div><div>Chủ Tower</div><div>Hết hạn</div><div>Còn lại</div><div>Cần chuẩn bị</div>
     </div>
     <div id="rows"></div>
   </section>
@@ -203,14 +203,12 @@ details.past .row { opacity: .7; }
       <span><i class="dot" style="background:var(--soon)"></i>Còn dưới 30 phút</span>
       <span><i class="dot" style="background:var(--hot)"></i>Còn dưới 15 phút, hiện đồng hồ lớn ở Cần chuẩn bị</span>
     </div>
-    <div>Giờ hết hạn và Còn lại tính đúng theo thời gian còn lại trong game lúc người nhập. Một server có nhiều map, nhưng mỗi map chỉ có một trụ, và dữ liệu đã nhập không ghi đè hay sửa được. Trụ đếm hết sẽ tự biến mất khỏi danh sách.
-    </div>
 </div>
 
 <div class="scrim" id="scrim" hidden>
   <div class="panel" role="dialog" aria-modal="true" aria-labelledby="pTitle">
     <div class="phead">
-      <div><h2 id="pTitle">Thêm thông tin trụ</h2><p class="lead">Nhập thông tin từ game để mọi người cùng theo dõi.</p></div>
+      <div><h2 id="pTitle">Thêm thông tin Tower</h2><p class="lead">Nhập thông tin từ game để mọi người cùng theo dõi.</p></div>
       <span class="req">* Bắt buộc</span>
     </div>
 
@@ -219,21 +217,21 @@ details.past .row { opacity: .7; }
       <div class="fld"><label for="iMap">Map <b>*</b></label><select id="iMap"><option value="">Chọn Map</option></select></div>
       <div class="fld"><label for="iX">Toạ độ X <b>*</b></label><input id="iX" inputmode="numeric" maxlength="3" autocomplete="off" placeholder="225"></div>
       <div class="fld"><label for="iY">Toạ độ Y <b>*</b></label><input id="iY" inputmode="numeric" maxlength="3" autocomplete="off" placeholder="44"></div>
-      <div class="fld"><label for="iOwner">Chủ sở hữu <b>*</b></label><input id="iOwner" maxlength="20" autocomplete="off" placeholder="Tên nhân vật giữ trụ"></div>
+      <div class="fld"><label for="iOwner">Chủ sở hữu <b>*</b></label><input id="iOwner" maxlength="20" autocomplete="off" placeholder="Tên nhân vật giữ Tower"></div>
       <div class="fld"><label for="iPh">Phe <b>*</b></label><select id="iPh"><option value="">Chọn Phe</option><option value="enemy">Enemy</option><option value="ally">Ally</option></select></div>
     </div>
 
     <div id="dupe" class="alert" role="alert" hidden></div>
 
     <div class="grp">
-      <span class="gt">Trụ hết hạn <b>*</b></span>
+      <span class="gt">Tower hết hạn <b>*</b></span>
       <p class="gh">Nhập thời gian còn lại trong game</p>
       <div class="hms">
         <div><label for="iH">Giờ</label><input id="iH" inputmode="numeric" maxlength="3" autocomplete="off" placeholder="00"></div><span class="c">:</span>
         <div><label for="iM">Phút</label><input id="iM" inputmode="numeric" maxlength="2" autocomplete="off" placeholder="00"></div><span class="c">:</span>
         <div><label for="iS">Giây</label><input id="iS" inputmode="numeric" maxlength="2" autocomplete="off" placeholder="00"></div>
       </div>
-      <p class="note">Tính giờ hết hạn từ lúc bấm Thêm trụ · Giờ Việt Nam</p>
+      <p class="note">Tính giờ hết hạn từ lúc bấm Thêm Tower · Giờ Việt Nam</p>
     </div>
 
     <div class="est" id="est"><span class="k">Giờ hết hạn dự kiến</span><span class="v" id="estV">—</span><span class="r" id="estR"></span></div>
@@ -242,7 +240,7 @@ details.past .row { opacity: .7; }
     <div class="pfoot">
       <span class="lockn">Sau khi thêm, dữ liệu bị khoá: không sửa hay xoá được. Kiểm tra kỹ trước khi bấm.</span>
       <button class="btn" id="pCancel" type="button">Huỷ</button>
-      <button class="btn primary" id="pSave" type="button">Thêm trụ</button>
+      <button class="btn primary" id="pSave" type="button">Thêm Tower</button>
     </div>
   </div>
 </div>
@@ -264,7 +262,7 @@ var firebaseConfig = {
 var MAPS = ["Lorencia","Dungeon","Devias","Noria","Lost Tower 1","Lost Tower 2","Lost Tower 3","Lost Tower 4","Lost Tower 5","Lost Tower 6","Lost Tower 7","Arena","Atlans","Tarkan","Icarus","Aida","Kanturu","Elbeland","Raklion","Vulcanus","Ferea"];
 var VN = 7 * 3600e3, TOL = 0, PAST_MS = 0; // TOL = 0: hết hạn đúng giờ nhập, không cộng trừ
 
-var FIXED_SV = ["1", "2", "3", "7", "10", "16", "17"]; // server có vị trí trụ cố định; các server còn lại là Random
+var FIXED_SV = ["1", "2", "3", "7", "10", "16", "17"]; // server có vị trí Tower cố định; các server còn lại là Random
 function isRandom(sv) { return FIXED_SV.indexOf(String(sv)) < 0; }
 function $(id) { return document.getElementById(id); }
 function pad(n) { return String(n).padStart(2, "0"); }
@@ -283,7 +281,7 @@ function dayLabel(ms, now) {
 }
 function plain(s) { return String(s).normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/đ/g, "d").replace(/Đ/g, "D").toLowerCase(); }
 function slug(s) { return plain(s).replace(/[^a-z0-9]/g, ""); }
-function towerId(server, map) { return "sv" + server + "_" + slug(map); } // một server + một map = một trụ
+function towerId(server, map) { return "sv" + server + "_" + slug(map); } // một server + một map = một Tower
 
 /* ---- dữ liệu dùng chung (Firebase Realtime Database) ---- */
 var fdb = getDatabase(initializeApp(firebaseConfig));
@@ -296,7 +294,7 @@ function boot() {
     Object.keys(raw).forEach(function (id) {
       var v = raw[id] || {};
       if (typeof v.exp !== "number" || !v.server || !v.map) return;
-      if (v.exp < now - 60000) { remove(ref(fdb, "towers/" + id)).catch(function () {}); return; } // dọn trụ đã hết hạn
+      if (v.exp < now - 60000) { remove(ref(fdb, "towers/" + id)).catch(function () {}); return; } // dọn Tower đã hết hạn
       next[id] = { id: id, server: String(v.server), map: String(v.map), coords: String(v.coords || ""), owner: String(v.owner || ""), faction: v.faction === "ally" ? "ally" : "enemy", exp: v.exp };
     });
     towers = next; loaded = true; loadError = ""; fullRender(); checkDupe();
@@ -383,13 +381,13 @@ function fullRender() {
   if (!html) {
     html = loadError ? '<div class="empty"><strong>' + esc(loadError) + "</strong></div>"
       : !loaded ? '<div class="empty">Đang tải danh sách…</div>'
-      : all.length ? '<div class="empty"><strong>Không có trụ nào khớp bộ lọc</strong><span>Bỏ bớt bộ lọc hoặc đổi từ khoá.</span></div>'
-      : '<div class="empty"><strong>Chưa có trụ nào</strong><span>Bấm “Thêm trụ” để nhập trụ đầu tiên.</span></div>';
+      : all.length ? '<div class="empty"><strong>Không có Tower nào khớp bộ lọc</strong><span>Bỏ bớt bộ lọc hoặc đổi từ khoá.</span></div>'
+      : '<div class="empty"><strong>Chưa có Tower nào</strong><span>Bấm “Thêm Tower” để nhập Tower đầu tiên.</span></div>';
   }
   $("rows").innerHTML = html;
   var live = all.filter(function (t) { return now - (t.exp + TOL) <= PAST_MS; });
   var en = live.filter(function (t) { return t.faction === "enemy"; }).length;
-  $("chips").innerHTML = '<span class="chip"><b>' + live.length + '</b> tổng trụ</span><span class="chip enemy"><b>' + en + '</b> Enemy</span><span class="chip ally"><b>' + (live.length - en) + '</b> Ally</span>';
+  $("chips").innerHTML = '<span class="chip"><b>' + live.length + '</b> tổng Tower</span><span class="chip enemy"><b>' + en + '</b> Enemy</span><span class="chip ally"><b>' + (live.length - en) + '</b> Ally</span>';
   lastSig = sig(list, now);
 }
 function sig(list, now) { return list.map(function (t) { return t.id + t.exp + bucket(t, now) + (now - (t.exp + TOL) > PAST_MS ? "p" : ""); }).join(","); }
@@ -406,7 +404,7 @@ function tick() {
   checkAlerts(now);
   var next = null;
   filtered(now).forEach(function (t) { if (t.faction === "enemy" && t.exp > now && (!next || t.exp < next.exp)) next = t; });
-  document.title = next ? "(" + hms(next.exp - now).slice(next.exp - now >= 3600e3 ? 0 : 3) + ") Bảng Trụ MEGAMU" : "Bảng Trụ MEGAMU";
+  document.title = next ? "(" + hms(next.exp - now).slice(next.exp - now >= 3600e3 ? 0 : 3) + ") Bảng Tower MEGAMU" : "Bảng Tower MEGAMU";
   if (!$("scrim").hidden) updateEst();
 }
 
@@ -426,7 +424,7 @@ function tick() {
   sb.addEventListener("click", function () { soundOn = !soundOn; persist(); sbl(); if (soundOn) beep(); });
   sbl();
 })();
-/* ---- form thêm trụ ---- */
+/* ---- form thêm Tower ---- */
 function num(id) { var v = $(id).value.trim(); return v === "" ? 0 : (/^\d+$/.test(v) ? +v : NaN); }
 function leftMs() {
   var h = num("iH"), m = num("iM"), s = num("iS");
@@ -446,13 +444,13 @@ function existingFor() {
   var sv = $("iSv").value, mp = $("iMap").value;
   if (!sv || !mp) return null;
   var t = towers[towerId(sv, mp)];
-  return t && Date.now() <= t.exp + TOL ? t : null; // trụ còn trong danh sách thì không ghi đè
+  return t && Date.now() <= t.exp + TOL ? t : null; // Tower còn trong danh sách thì không ghi đè
 }
 function checkDupe() {
   var t = $("scrim").hidden ? null : existingFor(), box = $("dupe");
   if (t) {
     box.hidden = false;
-    box.textContent = "Sv" + t.server + " " + t.map + " đã có trụ (" + (t.owner || "?") + ", " + t.coords + ", hết hạn " + tOf(t.exp) + "). Mỗi map chỉ có một trụ và không ghi đè được. Nhập lại được sau khi trụ này đếm hết.";
+    box.textContent = "Sv" + t.server + " " + t.map + " đã có Tower (" + (t.owner || "?") + ", " + t.coords + ", hết hạn " + tOf(t.exp) + "). Mỗi map chỉ có một Tower và không ghi đè được. Nhập lại được sau khi Tower này đếm hết.";
   } else box.hidden = true;
   $("pSave").disabled = !!t;
 }
@@ -484,7 +482,7 @@ $("pSave").addEventListener("click", async function () {
     var cur = snap.exists() ? snap.val() : null;
     if (cur && typeof cur.exp === "number" && Date.now() <= cur.exp + TOL) {
       btn.disabled = false;
-      return fail("Sv" + sv + " " + map + " đã có trụ (" + (cur.owner || "?") + ", hết hạn " + (typeof cur.exp === "number" ? tOf(cur.exp) : "?") + "). Không ghi đè được.");
+      return fail("Sv" + sv + " " + map + " đã có Tower (" + (cur.owner || "?") + ", hết hạn " + (typeof cur.exp === "number" ? tOf(cur.exp) : "?") + "). Không ghi đè được.");
     }
     var exp = Math.round(Date.now() + l);
     await set(ref(fdb, "towers/" + id), { server: sv, map: map, coords: (+x) + "," + (+y), owner: owner, faction: ph, exp: exp, upd: Date.now() });
