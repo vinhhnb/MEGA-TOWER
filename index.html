@@ -137,23 +137,18 @@ details.past .row { opacity: .7; }
 .pfoot { display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end; align-items: center; }
 .pfoot .lockn { margin-right: auto; font-size: 12px; color: var(--muted); max-width: 52ch; }
 
-.calc { gap: 12px; width: min(460px, 100%); }
-.calc .chead { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
-.calc h2 { margin: 0; font-size: 21px; letter-spacing: -0.01em; }
-.xbtn { border: 1px solid var(--line); background: var(--raised); border-radius: 8px; width: 34px; height: 34px; font-size: 18px; line-height: 1; padding: 0; }
-.xbtn:hover { border-color: var(--muted); }
-.ccard { background: var(--raised); border: 1px solid var(--line); border-left: 4px solid var(--accent); border-radius: 10px; padding: 12px 14px; display: grid; gap: 4px; }
-.ccard.y { border-left-color: var(--soon); }
-.ccard.g { border-left-color: var(--done); }
-.ccard .k { font-size: 13px; font-weight: 700; }
-.ccard .big { font-size: 26px; font-weight: 800; letter-spacing: -0.01em; font-variant-numeric: tabular-nums; }
-.ccard .big.blue { color: var(--accent); } .ccard .big.green { color: var(--done); }
-.ccard .tot { text-align: center; font-weight: 800; font-size: 18px; color: var(--accent); }
-input[type=range] { padding: 0; border: 0; background: transparent; accent-color: var(--accent); height: 28px; }
-.cres { border: 2px solid var(--soon); background: var(--soon-soft); border-radius: 12px; padding: 16px; text-align: center; }
-.cres .k { font-weight: 800; letter-spacing: 0.02em; text-transform: uppercase; font-size: 14px; }
-.cres .v { font-size: 44px; font-weight: 800; line-height: 1.1; color: var(--soon); font-variant-numeric: tabular-nums; }
-.cres .s { font-size: 12px; color: var(--muted); margin-top: 2px; }
+.calc { width: min(560px, 100%); }
+.cstep { display: grid; grid-template-columns: 48px minmax(0, 1fr) 48px; gap: 10px; align-items: center; }
+.cstep .btn { height: 48px; font-size: 22px; padding: 0; }
+.cval { text-align: center; font-size: 44px; font-weight: 800; letter-spacing: -0.02em; line-height: 1; font-variant-numeric: tabular-nums; }
+.cval small { font-size: 14px; font-weight: 600; color: var(--muted); margin-left: 6px; letter-spacing: 0; }
+input[type=range] { padding: 0; border: 0; background: transparent; accent-color: var(--accent); height: 28px; margin-top: 4px; }
+.cquick { display: flex; flex-wrap: wrap; gap: 6px; }
+.cquick .btn.on { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.cgrid { display: grid; gap: 10px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.est.hero { grid-column: 1 / -1; border-color: var(--accent); }
+.est.hero .v { font-size: 38px; color: var(--accent); }
+@media (max-width: 520px) { .cgrid { grid-template-columns: minmax(0, 1fr); } .cval { font-size: 36px; } }
 .toasts { position: fixed; z-index: 40; left: max(12px, env(safe-area-inset-left, 0px)); right: max(12px, env(safe-area-inset-right, 0px)); bottom: calc(12px + env(safe-area-inset-bottom, 0px)); display: grid; gap: 8px; justify-items: center; pointer-events: none; }
 .toast { pointer-events: auto; width: min(560px, 100%); display: flex; gap: 12px; align-items: center; background: var(--ink); color: var(--bg); border-radius: 10px; padding: 12px 14px; font-weight: 600; box-shadow: 0 8px 28px rgba(0,0,0,.5); }
 .toast span { flex: 1; min-width: 0; overflow-wrap: anywhere; }
@@ -265,13 +260,26 @@ input[type=range] { padding: 0; border: 0; background: transparent; accent-color
 
 <div class="scrim" id="calcScrim" hidden>
   <div class="panel calc" role="dialog" aria-modal="true" aria-labelledby="cTitle">
-    <div class="chead"><h2 id="cTitle">Tính số ngọc cần thiết</h2><button class="xbtn" id="cClose" type="button" aria-label="Đóng">×</button></div>
-    <div class="ccard"><span class="k">Giờ hiện tại (GMT+7):</span><span class="big blue" id="cNow">--/-- --:--:--</span></div>
-    <div class="ccard y"><label class="k" for="cSlide" style="font-size:13px;color:var(--ink)">Giờ thêm: <span id="cExtra">0</span></label>
-      <input id="cSlide" type="range" min="0" max="44" step="1" value="0">
-      <span class="tot" id="cTotal">Total: 2h (Miễn phí)</span></div>
-    <div class="ccard"><span class="k">Giờ mở khóa:</span><span class="big green" id="cUnlock">--/-- --:--:--</span></div>
-    <div class="cres"><div class="k">Ngọc cần thiết:</div><div class="v" id="cGems">0</div><div class="s" id="cNote"></div></div>
+    <div class="phead">
+      <div><h2 id="cTitle">Tính ngọc gia hạn</h2><p class="lead">Ước tính số ngọc cần dùng để kéo dài thời gian giữ Tower.</p></div>
+      <button class="btn small" id="cClose" type="button">Đóng</button>
+    </div>
+    <div class="grp">
+      <span class="gt">Số giờ gia hạn thêm</span>
+      <p class="gh">2 giờ đầu miễn phí. Mỗi giờ gia hạn thêm được tính theo bảng giá tăng dần.</p>
+      <div class="cstep">
+        <button class="btn" id="cMinus" type="button" aria-label="Giảm 1 giờ">−</button>
+        <div class="cval"><span id="cExtra">0</span><small>giờ</small></div>
+        <button class="btn" id="cPlus" type="button" aria-label="Tăng 1 giờ">+</button>
+      </div>
+      <input id="cSlide" type="range" min="0" max="44" step="1" value="0" aria-label="Số giờ gia hạn thêm">
+      <div class="cquick" id="cQuick"></div>
+    </div>
+    <div class="cgrid">
+      <div class="est"><span class="k">Tổng thời gian giữ</span><span class="v" id="cTotal">2 giờ</span><span class="r" id="cFree"></span></div>
+      <div class="est"><span class="k">Hết hạn lúc (giờ VN)</span><span class="v" id="cUnlock">—</span><span class="r" id="cNow"></span></div>
+      <div class="est hero"><span class="k">Ngọc cần dùng</span><span class="v" id="cGems">0</span><span class="r" id="cNote"></span></div>
+    </div>
   </div>
 </div>
 
@@ -459,16 +467,26 @@ function tick() {
 var GEM_STEP = [5,7,10,14,19,25,31,38,45,54,62,72,82,92,103,115,127,140,153,166,180,195,210,226,241,258,275,292,310,328,347,366,385,405,425,446,467,488,510,533,555,578,602,626];
 var GEM_SUM = [0]; GEM_STEP.forEach(function (c, i) { GEM_SUM.push(GEM_SUM[i] + c); }); // GEM_SUM[k] = tổng ngọc cho k giờ thêm
 var FREE_H = 2;
-function dt(ms) { var d = vp(ms); return pad(d.getUTCDate()) + "/" + pad(d.getUTCMonth() + 1) + " " + pad(d.getUTCHours()) + ":" + pad(d.getUTCMinutes()) + ":" + pad(d.getUTCSeconds()); }
+function dt(ms) { var d = vp(ms); return pad(d.getUTCHours()) + ":" + pad(d.getUTCMinutes()) + ":" + pad(d.getUTCSeconds()) + " · " + pad(d.getUTCDate()) + "/" + pad(d.getUTCMonth() + 1); }
+function setExtra(k) { $("cSlide").value = String(Math.max(0, Math.min(44, k))); updateCalc(); }
 function updateCalc() {
-  var k = +$("cSlide").value, now = Date.now();
-  $("cNow").textContent = dt(now);
-  $("cExtra").textContent = k === 0 ? "0" : "+" + k + "h";
-  $("cTotal").textContent = "Total: " + (FREE_H + k) + "h" + (k === 0 ? " (Miễn phí)" : "");
-  $("cUnlock").textContent = dt(now + (FREE_H + k) * 3600e3);
-  $("cGems").textContent = GEM_SUM[k].toLocaleString("vi-VN");
-  $("cNote").textContent = k === 0 ? "" : "Giờ thứ " + k + " tốn " + GEM_STEP[k - 1] + " ngọc";
+  var k = +$("cSlide").value, now = Date.now(), tot = FREE_H + k;
+  $("cExtra").textContent = k;
+  $("cTotal").textContent = tot + " giờ";
+  $("cFree").textContent = k === 0 ? "Chỉ gồm 2 giờ miễn phí" : "2 giờ miễn phí + " + k + " giờ gia hạn";
+  $("cUnlock").textContent = dt(now + tot * 3600e3);
+  $("cNow").textContent = "Tính từ " + dt(now);
+  $("cGems").textContent = GEM_SUM[k].toLocaleString("vi-VN") + " ngọc";
+  $("cNote").textContent = k === 0 ? "Chưa gia hạn, không tốn ngọc" : "Giờ gia hạn thứ " + k + " tốn " + GEM_STEP[k - 1] + " ngọc" + (k < 44 ? " · giờ kế tiếp " + GEM_STEP[k] + " ngọc" : "");
+  $("cMinus").disabled = k <= 0; $("cPlus").disabled = k >= 44;
+  document.querySelectorAll("#cQuick .btn").forEach(function (b) { b.classList.toggle("on", +b.dataset.k === k); });
 }
+[[0, "Miễn phí"], [1, "+1h"], [3, "+3h"], [6, "+6h"], [12, "+12h"], [24, "+24h"], [44, "Tối đa"]].forEach(function (q) {
+  var b = document.createElement("button"); b.type = "button"; b.className = "btn small"; b.textContent = q[1]; b.dataset.k = q[0];
+  b.addEventListener("click", function () { setExtra(q[0]); }); $("cQuick").appendChild(b);
+});
+$("cMinus").addEventListener("click", function () { setExtra(+$("cSlide").value - 1); });
+$("cPlus").addEventListener("click", function () { setExtra(+$("cSlide").value + 1); });
 $("calcBtn").addEventListener("click", function () { $("calcScrim").hidden = false; updateCalc(); });
 $("cClose").addEventListener("click", function () { $("calcScrim").hidden = true; });
 $("calcScrim").addEventListener("mousedown", function (e) { if (e.target === this) this.hidden = true; });
