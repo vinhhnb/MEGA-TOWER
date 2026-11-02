@@ -1,97 +1,258 @@
-<!doctype html>
-<html lang="vi">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<!doctype html><html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Bảng Trụ MEGAMU</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
 <style>
-:root{--bg:#0f1218;--card:#181d27;--line:#2a3140;--tx:#e8ecf3;--mut:#8b95a8;--ally:#4c8dff;--enemy:#ff5a5f;--ok:#3ecf8e;--soon:#ff9f43;--crit:#ff5a5f;--acc:#4c8dff}
-*{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
-.wrap{max-width:980px;margin:0 auto;padding:16px}
-h1{font-size:20px;margin:4px 0 2px}
-.sub{color:var(--mut);font-size:13px;margin-bottom:14px}
-.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:14px}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px}
-label{display:block;font-size:12px;color:var(--mut);margin-bottom:3px}
-input,select,button{font:inherit;color:var(--tx);background:#0f131b;border:1px solid var(--line);border-radius:8px;padding:8px 10px;width:100%}
-button{cursor:pointer;background:var(--acc);border-color:var(--acc);font-weight:600}
-button.sec{background:transparent;color:var(--tx);border-color:var(--line)}
-.seg{display:flex;gap:6px}
-.seg label{flex:1;margin:0;text-align:center;border:1px solid var(--line);border-radius:8px;padding:8px;cursor:pointer;color:var(--tx);font-size:14px}
-.seg input{display:none}
-.seg input:checked+span{font-weight:700}
-.seg label.a.on{background:rgba(76,141,255,.2);border-color:var(--ally)}
-.seg label.e.on{background:rgba(255,90,95,.2);border-color:var(--enemy)}
-.row2{display:flex;gap:10px;margin-top:10px;align-items:end;flex-wrap:wrap}
-.row2>div{flex:1;min-width:150px}
-#msg{font-size:13px;margin-top:8px;min-height:18px}
-.err{color:var(--crit)}.good{color:var(--ok)}
-.bar{display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap}
-.bar>*{flex:1;min-width:120px}
-table{width:100%;border-collapse:collapse}
-th,td{text-align:left;padding:8px 6px;border-bottom:1px solid var(--line);vertical-align:top}
-th{font-size:12px;color:var(--mut);font-weight:600}
-.cd{font-variant-numeric:tabular-nums;font-weight:700;white-space:nowrap}
-.cd.soon{color:var(--soon)}.cd.crit{color:var(--crit)}
-.tag{font-size:11px;padding:1px 6px;border-radius:6px;border:1px solid var(--soon);color:var(--soon);margin-left:6px;vertical-align:2px;text-transform:uppercase}
-.f-ally{color:var(--ally);font-weight:600}.f-enemy{color:var(--enemy);font-weight:600}
-.mut{color:var(--mut);font-size:12px}
-.del{width:auto;padding:2px 8px;background:transparent;border-color:var(--line);color:var(--mut);font-weight:400}
-.empty{padding:24px;text-align:center;color:var(--mut)}
-@media(max-width:640px){th.h{display:none}td.h{display:none}}
-</style>
-</head>
-<body>
-<div class="wrap">
-  <h1>Bảng Trụ MEGAMU</h1>
-  <div class="sub">Nhập trụ ở dưới, mọi người cùng thấy ngay. Trụ hết hạn tự biến mất. Giờ theo giờ Việt Nam.</div>
+/* Phong cách: bảng điều khiển tối, nền xanh than, một màu nhấn xanh dương; vàng, đỏ, xanh lá chỉ dùng cho trạng thái.
+   Layout: thanh công cụ, bộ lọc, danh sách xếp theo giờ hết hạn chia theo ngày; form thêm trụ mở trong hộp thoại. */
+:root {
+  --bg: #0a0e16;
+  --surface: #111724;
+  --raised: #171f30;
+  --field: #0c121d;
+  --line: #222c42;
+  --ink: #e7ebf4;
+  --muted: #8793ab;
+  --accent: #4f8cff;
+  --accent-ink: #06101f;
+  --soon: #f0b34a;
+  --soon-soft: #221c10;
+  --hot: #ff6b5e;
+  --hot-soft: #2c1517;
+  --done: #35c58a;
+  --done-soft: #0e2620;
+  --enemy: #ff7a85;
+  --enemy-soft: #351b21;
+  --ally: #4fd1a1;
+  --ally-soft: #10292a;
+  --font: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body {
+  margin: 0; background: var(--bg); color: var(--ink); font-family: var(--font); font-size: 15px; line-height: 1.5;
+  font-feature-settings: "tnum" 1, "cv11" 1;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 20px 56px;
+}
+.wrap { max-width: 1040px; margin: 0 auto; display: grid; gap: 16px; }
+button, input, select { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
-  <div class="card">
-    <form id="f" autocomplete="off">
-      <div class="grid">
-        <div><label>Server</label><input id="sv" type="number" min="1" max="30" placeholder="vd 6" required></div>
-        <div><label>Map</label><select id="map" required></select></div>
-        <div><label>Chủ trụ</label><input id="owner" placeholder="Tên nhân vật" required></div>
-        <div><label>Phe</label>
-          <div class="seg" id="seg">
-            <label class="a on"><input type="radio" name="fac" value="ally" checked><span>Ally</span></label>
-            <label class="e"><input type="radio" name="fac" value="enemy"><span>Enemy</span></label>
-          </div>
-        </div>
-      </div>
-      <div class="row2">
-        <div><label>Vị trí / tọa độ (tuỳ chọn)</label><input id="coords" placeholder="vd 226,37 hoặc Cổng đỏ bên trái"></div>
-        <div><label>Còn lại (giờ:phút:giây)</label><input id="left" placeholder="vd 23:56:10"></div>
-        <div><label>hoặc Giờ kết thúc (hôm nay/mai)</label><input id="endt" type="time" step="1"></div>
-        <div style="flex:0 0 120px"><button type="submit">Lưu trụ</button></div>
-      </div>
-      <div id="msg"></div>
-    </form>
-  </div>
+.top { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 12px 24px; }
+.eyebrow { font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+h1 { margin: 2px 0 0; font-size: 26px; letter-spacing: -0.015em; text-wrap: balance; }
+.sub { margin: 2px 0 0; color: var(--muted); font-size: 14px; }
+.clockbox { text-align: right; }
+.clockbox .lbl { font-size: 12px; color: var(--muted); }
+.clock { font-weight: 700; font-size: 28px; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
+.clockbox .date { font-size: 13px; color: var(--muted); }
+
+.bar { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; }
+.btn { border: 1px solid var(--line); background: var(--raised); border-radius: 8px; padding: 8px 14px; font-weight: 600; font-size: 14px; }
+.btn:hover { border-color: var(--muted); }
+.btn.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.btn.primary:hover { filter: brightness(1.1); }
+.btn:disabled { opacity: .45; cursor: not-allowed; filter: none; }
+.btn.small { padding: 5px 10px; font-size: 13px; }
+.btn.danger { color: var(--enemy); }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; margin-left: auto; }
+.chip { padding: 3px 10px; border-radius: 999px; font-size: 13px; font-weight: 600; background: var(--raised); color: var(--muted); border: 1px solid var(--line); }
+.chip b { color: var(--ink); }
+.chip.soon { background: var(--soon-soft); color: var(--soon); border-color: transparent; } .chip.soon b { color: var(--soon); }
+.chip.enemy b { color: var(--enemy); } .chip.ally b { color: var(--ally); }
+
+.filters { display: grid; gap: 10px 12px; grid-template-columns: minmax(0, 2fr) repeat(4, minmax(0, 1fr)); background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 12px; }
+.f { display: grid; gap: 4px; min-width: 0; }
+.f label, .fld > label { font-size: 12px; color: var(--muted); font-weight: 600; }
+input, select { width: 100%; min-width: 0; padding: 9px 11px; border-radius: 8px; border: 1px solid var(--line); background: var(--field); color: var(--ink); }
+input::placeholder { color: #566179; }
+select option { background: var(--surface); color: var(--ink); }
+.bar select { width: auto; }
+
+.list { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+.cols, .row {
+  display: grid; align-items: center; gap: 8px 16px; padding: 12px 18px;
+  grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr) minmax(0, 1fr) minmax(0, 0.8fr) minmax(0, 1fr);
+}
+.cols { background: var(--raised); font-size: 12px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); padding-block: 9px; }
+.day { padding: 7px 18px; font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); background: var(--bg); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+.row { border-top: 1px solid var(--line); min-height: 66px; }
+.day + .row { border-top: 0; }
+.row.b-soon { background: var(--soon-soft); box-shadow: inset 4px 0 0 var(--soon); }
+.row.b-hot { background: var(--hot-soft); box-shadow: inset 4px 0 0 var(--hot); }
+.row.b-win, .row.b-done { background: var(--done-soft); box-shadow: inset 4px 0 0 var(--done); }
+.srv { font-weight: 800; font-size: 20px; letter-spacing: -0.02em; line-height: 1.2; }
+.mapline { margin-top: 2px; font-size: 14px; color: var(--muted); display: flex; flex-wrap: wrap; gap: 0 8px; align-items: baseline; }
+.mapline .m { color: var(--ink); font-weight: 600; }
+.owner { font-weight: 600; overflow-wrap: anywhere; }
+.ph { display: inline-block; margin-top: 3px; padding: 1px 8px; border-radius: 6px; font-size: 12px; font-weight: 700; }
+.ph.enemy { background: var(--enemy-soft); color: var(--enemy); }
+.ph.ally { background: var(--ally-soft); color: var(--ally); }
+.at .t { font-weight: 700; font-size: 16px; }
+.at .d { font-size: 12px; color: var(--muted); }
+.at .w { font-size: 12px; color: var(--muted); }
+.left { font-weight: 700; font-size: 17px; letter-spacing: -0.01em; }
+.b-soon .left { color: var(--soon); } .b-hot .left { color: var(--hot); } .b-win .left, .b-done .left { color: var(--done); }
+.prep { font-weight: 800; font-size: 30px; line-height: 1; letter-spacing: -0.02em; color: var(--hot); }
+.go { font-weight: 800; color: var(--done); }
+.dash { color: var(--muted); }
+.rd { margin-left: 8px; font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; padding: 1px 7px; border-radius: 6px; border: 1px solid var(--soon); color: var(--soon); vertical-align: 3px; }
+.empty { padding: 36px 16px; text-align: center; color: var(--muted); display: grid; gap: 10px; justify-items: center; }
+.empty strong { color: var(--ink); font-size: 16px; }
+details.past { border-top: 1px solid var(--line); }
+details.past summary { padding: 10px 18px; cursor: pointer; font-size: 13px; color: var(--muted); font-weight: 600; display: flex; gap: 12px; align-items: center; justify-content: space-between; }
+details.past .row { opacity: .7; }
+
+.foot { font-size: 13px; color: var(--muted); display: grid; gap: 4px; }
+.foot .lg { display: flex; flex-wrap: wrap; gap: 6px 16px; }
+.dot { display: inline-block; width: 9px; height: 9px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
+
+/* hộp thoại thêm trụ */
+.scrim { position: fixed; inset: 0; background: rgba(3, 6, 11, 0.72); z-index: 30; display: grid; place-items: start center; overflow-y: auto; padding: 24px 12px; }
+.panel { width: min(680px, 100%); background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 22px; display: grid; gap: 16px; }
+.phead { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; padding-bottom: 14px; border-bottom: 1px solid var(--line); }
+.panel h2 { margin: 0; font-size: 21px; letter-spacing: -0.01em; }
+.panel .lead { margin: 2px 0 0; font-size: 14px; color: var(--muted); }
+.req { font-size: 12px; color: var(--muted); white-space: nowrap; }
+.grid2 { display: grid; gap: 14px 16px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.fld { display: grid; gap: 6px; min-width: 0; align-content: start; }
+.fld > label b, .grp .gt b { color: var(--hot); font-weight: 600; }
+.grp { display: grid; gap: 6px; }
+.grp .gt { font-weight: 700; font-size: 14px; }
+.grp .gh { font-size: 13px; color: var(--muted); margin: -2px 0 0; }
+.hms { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) auto minmax(0, 1fr); gap: 8px; align-items: end; }
+.hms .c { color: var(--muted); font-weight: 700; padding-bottom: 10px; }
+.hms label { font-size: 12px; color: var(--muted); font-weight: 600; display: block; margin-bottom: 4px; }
+.hms input { font-size: 20px; font-weight: 700; padding: 10px 12px; }
+.note { font-size: 12px; color: var(--muted); margin: 0; }
+.est { border: 1px solid var(--line); background: var(--raised); border-radius: 10px; padding: 12px 14px; display: grid; gap: 2px; }
+.est .k { font-size: 12px; color: var(--muted); font-weight: 600; }
+.est .v { font-size: 22px; font-weight: 800; letter-spacing: -0.01em; }
+.est .r { font-size: 13px; color: var(--muted); }
+.est.ok { border-color: #1d5a47; background: var(--done-soft); } .est.ok .v { color: var(--done); }
+.alert { border-radius: 10px; padding: 10px 14px; font-size: 14px; background: var(--hot-soft); color: var(--hot); border: 1px solid #5a2328; }
+.pfoot { display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end; align-items: center; }
+.pfoot .lockn { margin-right: auto; font-size: 12px; color: var(--muted); max-width: 52ch; }
+
+.toasts { position: fixed; z-index: 40; left: max(12px, env(safe-area-inset-left, 0px)); right: max(12px, env(safe-area-inset-right, 0px)); bottom: calc(12px + env(safe-area-inset-bottom, 0px)); display: grid; gap: 8px; justify-items: center; pointer-events: none; }
+.toast { pointer-events: auto; width: min(560px, 100%); display: flex; gap: 12px; align-items: center; background: var(--ink); color: var(--bg); border-radius: 10px; padding: 12px 14px; font-weight: 600; box-shadow: 0 8px 28px rgba(0,0,0,.5); }
+.toast span { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.toast button { border: 0; background: rgba(0,0,0,.14); color: inherit; border-radius: 6px; padding: 4px 10px; font-weight: 700; }
+
+@media (max-width: 860px) {
+  .filters { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .filters .f:first-child { grid-column: 1 / -1; }
+  .cols { display: none; }
+  .row { grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "where left" "owner at" "prep prep"; }
+  .row > .c-where { grid-area: where; } .row > .c-owner { grid-area: owner; } .row > .c-at { grid-area: at; text-align: right; }
+  .row > .c-left { grid-area: left; text-align: right; } .row > .c-prep { grid-area: prep; }
+  .row > .c-prep.none { display: none; }
+  .chips { margin-left: 0; } .clockbox { text-align: left; }
+}
+@media (max-width: 520px) { .grid2, .filters { grid-template-columns: minmax(0, 1fr); } .phead { flex-direction: column; } .panel { padding: 16px; } }
+@media (prefers-reduced-motion: no-preference) { .row { transition: background-color .25s; } }
+</style>
+
+</head><body>
+<div class="wrap">
+  <header class="top">
+    <div>
+      <div class="eyebrow">MEGAMU · Farm Tower</div>
+      <h1>Bảng Trụ</h1>
+      <p class="sub">Trụ hết hạn sớm nhất ở trên cùng. Mọi người cùng xem một danh sách.</p>
+    </div>
+    <div class="clockbox">
+      <div class="lbl">Giờ Việt Nam · UTC+7</div>
+      <div class="clock" id="clock">--:--:--</div>
+      <div class="date" id="today"></div>
+    </div>
+  </header>
 
   <div class="bar">
-    <input id="q" placeholder="Tìm tên chủ trụ, vị trí...">
-    <select id="fsv"><option value="">Tất cả server</option></select>
-    <select id="fmap"><option value="">Tất cả map</option></select>
-    <select id="ffac"><option value="">Cả 2 phe</option><option value="ally">Ally</option><option value="enemy">Enemy</option></select>
+    <button class="btn primary" id="addBtn" type="button">+ Thêm trụ</button>
+    <label style="display:flex; align-items:center; gap:6px; font-size:13px; color:var(--muted);">Nhắc trước
+      <select id="alertMin" class="btn small" aria-label="Nhắc trước bao nhiêu phút">
+        <option value="0">Tắt</option><option value="5">5 phút</option><option value="10">10 phút</option><option value="15">15 phút</option><option value="20">20 phút</option>
+      </select>
+    </label>
+    <button class="btn small" id="soundBtn" type="button" aria-pressed="true">Tiếng: bật</button>
+    <div class="chips" id="chips" aria-live="polite"></div>
   </div>
 
-  <div class="card" style="padding:4px 10px">
-    <table>
-      <thead><tr><th>Còn lại</th><th>Server</th><th>Map</th><th>Chủ trụ</th><th class="h">Vị trí</th><th class="h">Hết hạn</th><th></th></tr></thead>
-      <tbody id="tb"></tbody>
-    </table>
-    <div id="empty" class="empty" style="display:none">Chưa có trụ nào đang chạy.</div>
-  </div>
-  <div class="mut" id="stat"></div>
+  <section class="filters" aria-label="Bộ lọc">
+    <div class="f"><label for="q">Tìm kiếm</label><input id="q" type="search" placeholder="Map, chủ trụ, server, toạ độ…" autocomplete="off"></div>
+    <div class="f"><label for="fSv">Server</label><select id="fSv"><option value="">Tất cả</option></select></div>
+    <div class="f"><label for="fMap">Map</label><select id="fMap"><option value="">Tất cả map</option></select></div>
+    <div class="f"><label for="fPh">Phe</label><select id="fPh"><option value="">Tất cả phe</option><option value="enemy">Enemy</option><option value="ally">Ally</option></select></div>
+    <div class="f"><label for="fT">Còn lại</label>
+      <select id="fT"><option value="">Tất cả</option><option value="15">≤ 15 phút</option><option value="60">≤ 1 giờ</option><option value="180">≤ 3 giờ</option><option value="360">≤ 6 giờ</option></select></div>
+  </section>
+
+  <section class="list" aria-label="Danh sách trụ">
+    <div class="cols" aria-hidden="true">
+      <div>Server · Map</div><div>Chủ trụ</div><div>Hết hạn</div><div>Còn lại</div><div>Cần chuẩn bị</div>
+    </div>
+    <div id="rows"></div>
+  </section>
+
+  <div class="foot">
+    <div class="lg">
+      <span><i class="dot" style="background:var(--soon)"></i>Còn dưới 30 phút</span>
+      <span><i class="dot" style="background:var(--hot)"></i>Còn dưới 15 phút, hiện đồng hồ lớn ở Cần chuẩn bị</span>
+    </div>
+    <div>Giờ hết hạn và Còn lại tính đúng theo thời gian còn lại trong game lúc người nhập. Một server có nhiều map, nhưng mỗi map chỉ có một trụ, và dữ liệu đã nhập không ghi đè hay sửa được. Trụ đếm hết sẽ tự biến mất khỏi danh sách.
+    </div>
 </div>
+
+<div class="scrim" id="scrim" hidden>
+  <div class="panel" role="dialog" aria-modal="true" aria-labelledby="pTitle">
+    <div class="phead">
+      <div><h2 id="pTitle">Thêm thông tin trụ</h2><p class="lead">Nhập thông tin từ game để mọi người cùng theo dõi.</p></div>
+      <span class="req">* Bắt buộc</span>
+    </div>
+
+    <div class="grid2">
+      <div class="fld"><label for="iSv">Server <b>*</b></label><select id="iSv"><option value="">Chọn Server</option></select></div>
+      <div class="fld"><label for="iMap">Map <b>*</b></label><select id="iMap"><option value="">Chọn Map</option></select></div>
+      <div class="fld"><label for="iX">Toạ độ X <b>*</b></label><input id="iX" inputmode="numeric" maxlength="3" autocomplete="off" placeholder="225"></div>
+      <div class="fld"><label for="iY">Toạ độ Y <b>*</b></label><input id="iY" inputmode="numeric" maxlength="3" autocomplete="off" placeholder="44"></div>
+      <div class="fld"><label for="iOwner">Chủ sở hữu <b>*</b></label><input id="iOwner" maxlength="20" autocomplete="off" placeholder="Tên nhân vật giữ trụ"></div>
+      <div class="fld"><label for="iPh">Phe <b>*</b></label><select id="iPh"><option value="">Chọn Phe</option><option value="enemy">Enemy</option><option value="ally">Ally</option></select></div>
+    </div>
+
+    <div id="dupe" class="alert" role="alert" hidden></div>
+
+    <div class="grp">
+      <span class="gt">Trụ hết hạn <b>*</b></span>
+      <p class="gh">Nhập thời gian còn lại trong game</p>
+      <div class="hms">
+        <div><label for="iH">Giờ</label><input id="iH" inputmode="numeric" maxlength="3" autocomplete="off" placeholder="00"></div><span class="c">:</span>
+        <div><label for="iM">Phút</label><input id="iM" inputmode="numeric" maxlength="2" autocomplete="off" placeholder="00"></div><span class="c">:</span>
+        <div><label for="iS">Giây</label><input id="iS" inputmode="numeric" maxlength="2" autocomplete="off" placeholder="00"></div>
+      </div>
+      <p class="note">Tính giờ hết hạn từ lúc bấm Thêm trụ · Giờ Việt Nam</p>
+    </div>
+
+    <div class="est" id="est"><span class="k">Giờ hết hạn dự kiến</span><span class="v" id="estV">—</span><span class="r" id="estR"></span></div>
+    <div id="pErr" class="alert" role="alert" hidden></div>
+
+    <div class="pfoot">
+      <span class="lockn">Sau khi thêm, dữ liệu bị khoá: không sửa hay xoá được. Kiểm tra kỹ trước khi bấm.</span>
+      <button class="btn" id="pCancel" type="button">Huỷ</button>
+      <button class="btn primary" id="pSave" type="button">Thêm trụ</button>
+    </div>
+  </div>
+</div>
+
+<div class="toasts" id="toasts" aria-live="assertive"></div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getDatabase, ref, onValue, set, remove, get } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
-
-const firebaseConfig = {
+import { getDatabase, ref, onValue, set, get, remove } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+var firebaseConfig = {
   apiKey: "AIzaSyAMtxzQ7Ug15Txu15aS5sdKyhPxAdgfUKo",
   authDomain: "mega-tower-2c862.firebaseapp.com",
   databaseURL: "https://mega-tower-2c862-default-rtdb.asia-southeast1.firebasedatabase.app",
@@ -100,139 +261,245 @@ const firebaseConfig = {
   messagingSenderId: "749697300326",
   appId: "1:749697300326:web:3d58074494ff21ff98faa7"
 };
-const db = getDatabase(initializeApp(firebaseConfig));
-const towersRef = ref(db, "towers");
+var MAPS = ["Lorencia","Dungeon","Devias","Noria","Lost Tower 1","Lost Tower 2","Lost Tower 3","Lost Tower 4","Lost Tower 5","Lost Tower 6","Lost Tower 7","Arena","Atlans","Tarkan","Icarus","Aida","Kanturu","Elbeland","Raklion","Vulcanus","Ferea"];
+var VN = 7 * 3600e3, TOL = 0, PAST_MS = 0; // TOL = 0: hết hạn đúng giờ nhập, không cộng trừ
 
-const MAPS = ["Lorencia","Devias","Noria","Elbeland","Atlans","Tarkan","Icarus","Aida","Ferea","Vulcanus","Raklion","Kanturu","Dungeon","Arena","Lost Tower 1","Lost Tower 2","Lost Tower 3","Lost Tower 4","Lost Tower 5","Lost Tower 6","Lost Tower 7","Lost Tower 8"];
-const FIXED = ["1","2","3","7","10","16","17"];
-const $ = id => document.getElementById(id);
-const slug = m => m.toLowerCase().replace(/\s+/g,"");
-const pad = n => String(n).padStart(2,"0");
-const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
-
-for (const m of MAPS) {
-  $("map").insertAdjacentHTML("beforeend", `<option>${m}</option>`);
-  $("fmap").insertAdjacentHTML("beforeend", `<option>${m}</option>`);
+var FIXED_SV = ["1", "2", "3", "7", "10", "16", "17"]; // server có vị trí trụ cố định; các server còn lại là Random
+function isRandom(sv) { return FIXED_SV.indexOf(String(sv)) < 0; }
+function $(id) { return document.getElementById(id); }
+function pad(n) { return String(n).padStart(2, "0"); }
+function esc(s) { return String(s == null ? "" : s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
+function hms(ms) { var s = Math.floor(Math.abs(ms) / 1000); return pad(Math.floor(s / 3600)) + ":" + pad(Math.floor(s / 60) % 60) + ":" + pad(s % 60); }
+function ms2(ms) { var s = Math.max(0, Math.floor(ms / 1000)); return pad(Math.floor(s / 60)) + ":" + pad(s % 60); }
+function vp(ms) { return new Date(ms + VN); }
+function tOf(ms) { var d = vp(ms); return pad(d.getUTCHours()) + ":" + pad(d.getUTCMinutes()) + ":" + pad(d.getUTCSeconds()); }
+function hm(ms) { return tOf(ms).slice(0, 5); }
+function dKey(ms) { var d = vp(ms); return d.getUTCFullYear() + "-" + pad(d.getUTCMonth() + 1) + "-" + pad(d.getUTCDate()); }
+function dShort(ms) { var d = vp(ms); return pad(d.getUTCDate()) + "/" + pad(d.getUTCMonth() + 1) + "/" + d.getUTCFullYear(); }
+function dayLabel(ms, now) {
+  var k = dKey(ms);
+  var pre = k === dKey(now) ? "Hôm nay · " : k === dKey(now + 864e5) ? "Ngày mai · " : k === dKey(now - 864e5) ? "Hôm qua · " : "";
+  return pre + dShort(ms).slice(0, 5);
 }
-for (let i = 1; i <= 20; i++) $("fsv").insertAdjacentHTML("beforeend", `<option value="${i}">Sv${i}</option>`);
+function plain(s) { return String(s).normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/đ/g, "d").replace(/Đ/g, "D").toLowerCase(); }
+function slug(s) { return plain(s).replace(/[^a-z0-9]/g, ""); }
+function towerId(server, map) { return "sv" + server + "_" + slug(map); } // một server + một map = một trụ
 
-document.querySelectorAll("#seg label").forEach(l => l.addEventListener("click", () => {
-  document.querySelectorAll("#seg label").forEach(x => x.classList.remove("on"));
-  l.classList.add("on");
-}));
+/* ---- dữ liệu dùng chung (Firebase Realtime Database) ---- */
+var fdb = getDatabase(initializeApp(firebaseConfig));
+var towersRef = ref(fdb, "towers");
+var towers = {}, loaded = false, loadError = "";
 
-let data = {};
-let connected = false;
-onValue(towersRef, snap => { data = snap.val() || {}; connected = true; cleanup(); render(); },
-  err => { $("stat").textContent = "Lỗi kết nối dữ liệu: " + err.message; });
-
-// Xóa bản ghi đã hết hạn quá 1 phút (ai mở trang cũng dọn giúp)
-let cleaning = false;
-function cleanup() {
-  if (cleaning) return;
-  const now = Date.now();
-  const dead = Object.entries(data).filter(([k, v]) => !v || !v.exp || v.exp < now - 60000);
-  if (!dead.length) return;
-  cleaning = true;
-  Promise.all(dead.map(([k]) => remove(ref(db, "towers/" + k)).catch(() => {}))).finally(() => { cleaning = false; });
-}
-
-function fmtLeft(ms) {
-  const s = Math.max(0, Math.floor(ms / 1000));
-  return pad(Math.floor(s / 3600)) + ":" + pad(Math.floor(s % 3600 / 60)) + ":" + pad(s % 60);
-}
-function fmtEnd(ts) {
-  const d = new Date(ts + 7 * 3600000); // giờ VN
-  const today = new Date(Date.now() + 7 * 3600000);
-  const day = d.getUTCDate() === today.getUTCDate() ? "" : pad(d.getUTCDate()) + "/" + pad(d.getUTCMonth() + 1) + " ";
-  return day + pad(d.getUTCHours()) + ":" + pad(d.getUTCMinutes());
+function boot() {
+  onValue(towersRef, function (snap) {
+    var raw = snap.val() || {}, next = {}, now = Date.now();
+    Object.keys(raw).forEach(function (id) {
+      var v = raw[id] || {};
+      if (typeof v.exp !== "number" || !v.server || !v.map) return;
+      if (v.exp < now - 60000) { remove(ref(fdb, "towers/" + id)).catch(function () {}); return; } // dọn trụ đã hết hạn
+      next[id] = { id: id, server: String(v.server), map: String(v.map), coords: String(v.coords || ""), owner: String(v.owner || ""), faction: v.faction === "ally" ? "ally" : "enemy", exp: v.exp };
+    });
+    towers = next; loaded = true; loadError = ""; fullRender(); checkDupe();
+  }, function (e) { loaded = true; loadError = "Mất kết nối dữ liệu (" + (e && e.code || "lỗi") + "). Tải lại trang."; fullRender(); });
 }
 
-function render() {
-  const now = Date.now();
-  const q = $("q").value.trim().toLowerCase();
-  const fs = $("fsv").value, fm = $("fmap").value, ff = $("ffac").value;
-  const rows = Object.entries(data)
-    .filter(([k, v]) => v && v.exp > now)
-    .map(([k, v]) => ({ k, ...v }))
-    .filter(v => (!fs || String(v.server) === fs) && (!fm || v.map === fm) && (!ff || v.faction === ff) &&
-      (!q || (v.owner + " " + (v.coords || "")).toLowerCase().includes(q)))
-    .sort((a, b) => a.exp - b.exp);
-  $("tb").innerHTML = rows.map(v => {
-    const left = v.exp - now;
-    const cls = left < 15 * 60000 ? "crit" : left < 60 * 60000 ? "soon" : "";
-    const rnd = FIXED.includes(String(v.server)) ? "" : '<span class="tag">Random</span>';
-    return `<tr data-k="${esc(v.k)}"><td class="cd ${cls}" data-exp="${v.exp}">${fmtLeft(left)}</td>
-      <td>Sv${esc(v.server)}${rnd}</td><td>${esc(v.map)}</td>
-      <td class="f-${v.faction === "enemy" ? "enemy" : "ally"}">${esc(v.owner)}<div class="mut">${v.faction === "enemy" ? "Enemy" : "Ally"}</div></td>
-      <td class="h">${esc(v.coords || "")}</td><td class="h mut">${fmtEnd(v.exp)}</td>
-      <td><button class="del" title="Xóa trụ này" data-del="${esc(v.k)}">✕</button></td></tr>`;
-  }).join("");
-  $("empty").style.display = rows.length ? "none" : "block";
-  $("stat").textContent = connected ? rows.length + " trụ đang chạy" : "Đang kết nối...";
-}
-
-// Đếm ngược mỗi giây (chỉ cập nhật chữ, không vẽ lại cả bảng)
-setInterval(() => {
-  const now = Date.now();
-  let expired = false;
-  document.querySelectorAll("td.cd").forEach(td => {
-    const left = Number(td.dataset.exp) - now;
-    if (left <= 0) expired = true;
-    td.textContent = fmtLeft(left);
-    td.className = "cd " + (left < 15 * 60000 ? "crit" : left < 60 * 60000 ? "soon" : "");
-  });
-  if (expired) { render(); cleanup(); }
-}, 1000);
-
-["q", "fsv", "fmap", "ffac"].forEach(id => $(id).addEventListener("input", render));
-
-$("tb").addEventListener("click", async e => {
-  const k = e.target.dataset && e.target.dataset.del;
-  if (!k) return;
-  const v = data[k];
-  if (confirm(`Xóa trụ Sv${v.server} ${v.map} (${v.owner})?`)) await remove(ref(db, "towers/" + k));
-});
-
-function msg(t, ok) { const m = $("msg"); m.textContent = t; m.className = ok ? "good" : "err"; }
-
-$("f").addEventListener("submit", async e => {
-  e.preventDefault();
-  const server = String($("sv").value).trim();
-  const map = $("map").value;
-  const owner = $("owner").value.trim();
-  const faction = document.querySelector('input[name="fac"]:checked').value;
-  const coords = $("coords").value.trim();
-  const leftStr = $("left").value.trim();
-  const endStr = $("endt").value;
-  let exp = 0;
-  const now = Date.now();
-  if (leftStr) {
-    const p = leftStr.split(":").map(Number);
-    if (p.some(isNaN) || p.length > 3) return msg("Giờ còn lại phải dạng giờ:phút:giây, vd 23:56:10", false);
-    while (p.length < 3) p.unshift(0);
-    exp = now + (p[0] * 3600 + p[1] * 60 + p[2]) * 1000;
-  } else if (endStr) {
-    const p = endStr.split(":").map(Number);
-    const vn = new Date(now + 7 * 3600000);
-    let t = Date.UTC(vn.getUTCFullYear(), vn.getUTCMonth(), vn.getUTCDate(), p[0], p[1], p[2] || 0) - 7 * 3600000;
-    if (t < now - 3600000) t += 86400000; // giờ đã qua => hiểu là ngày mai
-    exp = t;
-  } else return msg("Nhập giờ còn lại hoặc giờ kết thúc.", false);
-  if (exp <= now) return msg("Trụ này đã hết hạn rồi.", false);
-
-  const key = "sv" + server + "_" + slug(map);
+/* ---- nhắc ---- */
+var alerted = {}, soundOn = true, alertMin = 10;
+try { alerted = JSON.parse(localStorage.getItem("tw-alerted") || "{}") || {}; } catch (e) { alerted = {}; }
+try { soundOn = localStorage.getItem("tw-sound") !== "0"; var am = localStorage.getItem("tw-min"); if (am !== null && am !== "") alertMin = +am; } catch (e) {}
+function persist() { try { localStorage.setItem("tw-alerted", JSON.stringify(alerted)); localStorage.setItem("tw-sound", soundOn ? "1" : "0"); localStorage.setItem("tw-min", String(alertMin)); } catch (e) {} }
+var audioCtx = null;
+function beep() {
+  if (!soundOn) return;
   try {
-    const cur = (await get(ref(db, "towers/" + key))).val();
-    if (cur && cur.exp > now && Math.abs(cur.exp - exp) > 5 * 60000) {
-      const ok = confirm(`Sv${server} ${map} đang có trụ của ${cur.owner} (còn ${fmtLeft(cur.exp - now)}).\nGhi đè bằng ${owner}?`);
-      if (!ok) return;
+    audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+    [0, 0.22, 0.44].forEach(function (d) {
+      var o = audioCtx.createOscillator(), g = audioCtx.createGain();
+      o.frequency.value = 880; o.connect(g); g.connect(audioCtx.destination);
+      var t0 = audioCtx.currentTime + d; g.gain.setValueAtTime(0.0001, t0); g.gain.exponentialRampToValueAtTime(0.25, t0 + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.18);
+      o.start(t0); o.stop(t0 + 0.2);
+    });
+  } catch (e) {}
+}
+function toast(msg, sticky) {
+  var el = document.createElement("div"); el.className = "toast";
+  el.innerHTML = "<span>" + esc(msg).replace(/\n/g, "<br>") + "</span><button type=\"button\">Đóng</button>";
+  el.querySelector("button").onclick = function () { el.remove(); };
+  $("toasts").appendChild(el);
+  if (!sticky) setTimeout(function () { el.remove(); }, 9000);
+}
+function label(t) { return "Sv" + t.server + " " + t.map + (t.coords ? " " + t.coords : ""); }
+function checkAlerts(now) {
+  if (!alertMin) return;
+  var msgs = [];
+  filtered(now).forEach(function (t) {
+    if (t.faction !== "enemy") return;
+    var toStart = t.exp - now, k = t.id + "|" + t.exp + "|pre";
+    if (toStart > 0 && toStart <= alertMin * 60e3 && !alerted[k]) { alerted[k] = 1; msgs.push(label(t) + ": hết hạn sau " + Math.ceil(toStart / 60e3) + " phút (" + hm(t.exp) + ")"); }
+  });
+  if (msgs.length) { toast(msgs.join("\n"), true); beep(); persist(); }
+}
+
+/* ---- hiển thị ---- */
+var lastSig = "";
+function bucket(t, now) {
+  var l = t.exp - now;
+  if (l <= 0) return "done";
+  return l <= 15 * 60e3 ? "hot" : l <= 30 * 60e3 ? "soon" : "far";
+}
+function filtered(now) {
+  var q = plain($("q").value.trim()), sv = $("fSv").value, mp = $("fMap").value, ph = $("fPh").value, ft = $("fT").value;
+  return Object.keys(towers).map(function (k) { return towers[k]; }).filter(function (t) {
+    if (now > t.exp + TOL) return false; // đếm hết thì loại khỏi danh sách
+    if (sv && t.server !== sv) return false;
+    if (mp && t.map !== mp) return false;
+    if (ph && t.faction !== ph) return false;
+    if (ft && t.exp - now > (+ft) * 60e3) return false;
+    if (q && plain(t.map + " " + t.owner + " sv" + t.server + " " + t.server + " " + t.coords).indexOf(q) < 0) return false;
+    return true;
+  }).sort(function (a, b) { return a.exp - b.exp; });
+}
+function rowHtml(t, now) {
+  var left = t.exp - now, b = bucket(t, now);
+  var prep = b === "hot" ? '<div class="prep" data-to="' + t.exp + '">' + ms2(left) + '</div>' : '';
+  return '<div class="row b-' + b + '" data-id="' + esc(t.id) + '">' +
+    '<div class="c-where"><div class="srv">Sv' + esc(t.server) + (isRandom(t.server) ? '<span class="rd">Random</span>' : '') + '</div><div class="mapline"><span class="m">' + esc(t.map) + '</span><span>' + esc(t.coords) + '</span></div></div>' +
+    '<div class="c-owner"><div class="owner">' + (esc(t.owner) || "—") + '</div><span class="ph ' + t.faction + '">' + (t.faction === "ally" ? "Ally" : "Enemy") + '</span></div>' +
+    '<div class="c-at at"><div class="t">' + tOf(t.exp) + '</div><div class="d">' + dShort(t.exp) + '</div></div>' +
+    '<div class="c-left left" data-at="' + t.exp + '">' + hms(Math.max(0, left)) + '</div>' +
+    '<div class="c-prep' + (prep ? "" : " none") + '">' + prep + '</div></div>';
+}
+function fullRender() {
+  var now = Date.now(), all = Object.keys(towers).map(function (k) { return towers[k]; });
+  var list = filtered(now);
+  var act = list.filter(function (t) { return now - (t.exp + TOL) <= PAST_MS; });
+  var past = list.filter(function (t) { return now - (t.exp + TOL) > PAST_MS; }).sort(function (a, b) { return b.exp - a.exp; });
+  var html = "", lastDay = "";
+  act.forEach(function (t) {
+    var k = dKey(t.exp);
+    if (k !== lastDay) { html += '<div class="day">' + dayLabel(t.exp, now) + "</div>"; lastDay = k; }
+    html += rowHtml(t, now);
+  });
+  if (!html) {
+    html = loadError ? '<div class="empty"><strong>' + esc(loadError) + "</strong></div>"
+      : !loaded ? '<div class="empty">Đang tải danh sách…</div>'
+      : all.length ? '<div class="empty"><strong>Không có trụ nào khớp bộ lọc</strong><span>Bỏ bớt bộ lọc hoặc đổi từ khoá.</span></div>'
+      : '<div class="empty"><strong>Chưa có trụ nào</strong><span>Bấm “Thêm trụ” để nhập trụ đầu tiên.</span></div>';
+  }
+  $("rows").innerHTML = html;
+  var live = all.filter(function (t) { return now - (t.exp + TOL) <= PAST_MS; });
+  var en = live.filter(function (t) { return t.faction === "enemy"; }).length;
+  $("chips").innerHTML = '<span class="chip"><b>' + live.length + '</b> tổng trụ</span><span class="chip enemy"><b>' + en + '</b> Enemy</span><span class="chip ally"><b>' + (live.length - en) + '</b> Ally</span>';
+  lastSig = sig(list, now);
+}
+function sig(list, now) { return list.map(function (t) { return t.id + t.exp + bucket(t, now) + (now - (t.exp + TOL) > PAST_MS ? "p" : ""); }).join(","); }
+function tick() {
+  var now = Date.now();
+  $("clock").textContent = tOf(now); $("today").textContent = dShort(now);
+  if (sig(filtered(now), now) !== lastSig) fullRender();
+  else {
+    var a = document.querySelectorAll("[data-at]"), i;
+    for (i = 0; i < a.length; i++) a[i].textContent = hms(Math.max(0, (+a[i].getAttribute("data-at")) - now));
+    a = document.querySelectorAll("[data-to]");
+    for (i = 0; i < a.length; i++) a[i].textContent = ms2((+a[i].getAttribute("data-to")) - now);
+  }
+  checkAlerts(now);
+  var next = null;
+  filtered(now).forEach(function (t) { if (t.faction === "enemy" && t.exp > now && (!next || t.exp < next.exp)) next = t; });
+  document.title = next ? "(" + hms(next.exp - now).slice(next.exp - now >= 3600e3 ? 0 : 3) + ") Bảng Trụ MEGAMU" : "Bảng Trụ MEGAMU";
+  if (!$("scrim").hidden) updateEst();
+}
+
+/* ---- bộ lọc và điều khiển ---- */
+(function () {
+  var sv = $("fSv"), mp = $("fMap"), isv = $("iSv"), imp = $("iMap");
+  for (var i = 1; i <= 19; i++) { var lb = "Sv" + i + (isRandom(i) ? " · Random" : ""); sv.add(new Option(lb, String(i))); isv.add(new Option(lb, String(i))); }
+  MAPS.forEach(function (m) { mp.add(new Option(m, m)); imp.add(new Option(m, m)); });
+  ["q", "fSv", "fMap", "fPh", "fT"].forEach(function (id) {
+    $(id).addEventListener("input", function () { fullRender(); try { if (id !== "q") sessionStorage.setItem("tw-" + id, $(id).value); } catch (e) {} });
+    try { var v = sessionStorage.getItem("tw-" + id); if (v && id !== "q") $(id).value = v; } catch (e) {}
+  });
+  $("alertMin").value = String(alertMin); if ($("alertMin").value !== String(alertMin)) $("alertMin").value = "10";
+  $("alertMin").addEventListener("change", function () { alertMin = +this.value; persist(); });
+  var sb = $("soundBtn");
+  function sbl() { sb.textContent = "Tiếng: " + (soundOn ? "bật" : "tắt"); sb.setAttribute("aria-pressed", String(soundOn)); }
+  sb.addEventListener("click", function () { soundOn = !soundOn; persist(); sbl(); if (soundOn) beep(); });
+  sbl();
+})();
+/* ---- form thêm trụ ---- */
+function num(id) { var v = $(id).value.trim(); return v === "" ? 0 : (/^\d+$/.test(v) ? +v : NaN); }
+function leftMs() {
+  var h = num("iH"), m = num("iM"), s = num("iS");
+  if ([h, m, s].some(isNaN) || m > 59 || s > 59) return NaN;
+  var t = ((h * 60 + m) * 60 + s) * 1000;
+  return t > 0 ? t : NaN;
+}
+function updateEst() {
+  var l = leftMs(), est = $("est");
+  if (isNaN(l)) { $("estV").textContent = "—"; $("estR").textContent = ""; est.classList.remove("ok"); return; }
+  var exp = Date.now() + l;
+  $("estV").textContent = tOf(exp) + " · " + dShort(exp);
+  $("estR").textContent = "";
+  est.classList.add("ok");
+}
+function existingFor() {
+  var sv = $("iSv").value, mp = $("iMap").value;
+  if (!sv || !mp) return null;
+  var t = towers[towerId(sv, mp)];
+  return t && Date.now() <= t.exp + TOL ? t : null; // trụ còn trong danh sách thì không ghi đè
+}
+function checkDupe() {
+  var t = $("scrim").hidden ? null : existingFor(), box = $("dupe");
+  if (t) {
+    box.hidden = false;
+    box.textContent = "Sv" + t.server + " " + t.map + " đã có trụ (" + (t.owner || "?") + ", " + t.coords + ", hết hạn " + tOf(t.exp) + "). Mỗi map chỉ có một trụ và không ghi đè được. Nhập lại được sau khi trụ này đếm hết.";
+  } else box.hidden = true;
+  $("pSave").disabled = !!t;
+}
+["iSv", "iMap"].forEach(function (id) { $(id).addEventListener("input", checkDupe); });
+["iX", "iY", "iH", "iM", "iS"].forEach(function (id) { $(id).addEventListener("input", function () { this.value = this.value.replace(/\D/g, ""); updateEst(); }); });
+
+function openPanel() {
+  ["iSv", "iMap", "iPh"].forEach(function (i) { $(i).value = ""; });
+  ["iX", "iY", "iOwner", "iH", "iM", "iS"].forEach(function (i) { $(i).value = ""; });
+  $("pErr").hidden = true; $("dupe").hidden = true; $("pSave").disabled = false;
+  $("scrim").hidden = false; updateEst(); setTimeout(function () { $("iSv").focus(); }, 30);
+}
+function closePanel() { $("scrim").hidden = true; }
+function fail(msg) { var e = $("pErr"); e.textContent = msg; e.hidden = false; }
+$("addBtn").addEventListener("click", openPanel);
+$("pCancel").addEventListener("click", closePanel);
+$("scrim").addEventListener("mousedown", function (e) { if (e.target === this) closePanel(); });
+document.addEventListener("keydown", function (e) { if (e.key === "Escape" && !$("scrim").hidden) closePanel(); });
+
+$("pSave").addEventListener("click", async function () {
+  $("pErr").hidden = true;
+  var sv = $("iSv").value, map = $("iMap").value, x = $("iX").value.trim(), y = $("iY").value.trim(), owner = $("iOwner").value.trim(), ph = $("iPh").value, l = leftMs();
+  if (!sv || !map || !x || !y || !owner || !ph) return fail("Điền đủ các ô có dấu *.");
+  if (isNaN(l)) return fail("Thời gian còn lại không hợp lệ: phút và giây từ 0 đến 59, tổng phải lớn hơn 0.");
+  var id = towerId(sv, map), btn = this;
+  btn.disabled = true;
+  try {
+    var snap = await get(ref(fdb, "towers/" + id));           // kiểm tra lại ngay trước khi ghi, phòng người khác vừa thêm
+    var cur = snap.exists() ? snap.val() : null;
+    if (cur && typeof cur.exp === "number" && Date.now() <= cur.exp + TOL) {
+      btn.disabled = false;
+      return fail("Sv" + sv + " " + map + " đã có trụ (" + (cur.owner || "?") + ", hết hạn " + (typeof cur.exp === "number" ? tOf(cur.exp) : "?") + "). Không ghi đè được.");
     }
-    await set(ref(db, "towers/" + key), { server, map, owner, faction, coords, exp });
-    msg(`Đã lưu Sv${server} ${map}.`, true);
-    $("owner").value = ""; $("coords").value = ""; $("left").value = ""; $("endt").value = "";
-  } catch (err) { msg("Lưu thất bại: " + err.message, false); }
+    var exp = Math.round(Date.now() + l);
+    await set(ref(fdb, "towers/" + id), { server: sv, map: map, coords: (+x) + "," + (+y), owner: owner, faction: ph, exp: exp, upd: Date.now() });
+    toast("Đã thêm Sv" + sv + " " + map + ". Hết hạn " + tOf(exp) + ".");
+    closePanel();
+  } catch (e) {
+    fail("Không lưu được (" + (e && (e.code || e.message) || "lỗi") + "). Thử lại.");
+  }
+  btn.disabled = false;
 });
+
+fullRender();
+setInterval(tick, 1000);
+tick();
+boot();
 </script>
-</body>
-</html>
+
+</body></html>
