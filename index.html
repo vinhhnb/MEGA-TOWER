@@ -1,0 +1,238 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Bảng Trụ MEGAMU</title>
+<style>
+:root{--bg:#0f1218;--card:#181d27;--line:#2a3140;--tx:#e8ecf3;--mut:#8b95a8;--ally:#4c8dff;--enemy:#ff5a5f;--ok:#3ecf8e;--soon:#ff9f43;--crit:#ff5a5f;--acc:#4c8dff}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.wrap{max-width:980px;margin:0 auto;padding:16px}
+h1{font-size:20px;margin:4px 0 2px}
+.sub{color:var(--mut);font-size:13px;margin-bottom:14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:14px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px}
+label{display:block;font-size:12px;color:var(--mut);margin-bottom:3px}
+input,select,button{font:inherit;color:var(--tx);background:#0f131b;border:1px solid var(--line);border-radius:8px;padding:8px 10px;width:100%}
+button{cursor:pointer;background:var(--acc);border-color:var(--acc);font-weight:600}
+button.sec{background:transparent;color:var(--tx);border-color:var(--line)}
+.seg{display:flex;gap:6px}
+.seg label{flex:1;margin:0;text-align:center;border:1px solid var(--line);border-radius:8px;padding:8px;cursor:pointer;color:var(--tx);font-size:14px}
+.seg input{display:none}
+.seg input:checked+span{font-weight:700}
+.seg label.a.on{background:rgba(76,141,255,.2);border-color:var(--ally)}
+.seg label.e.on{background:rgba(255,90,95,.2);border-color:var(--enemy)}
+.row2{display:flex;gap:10px;margin-top:10px;align-items:end;flex-wrap:wrap}
+.row2>div{flex:1;min-width:150px}
+#msg{font-size:13px;margin-top:8px;min-height:18px}
+.err{color:var(--crit)}.good{color:var(--ok)}
+.bar{display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap}
+.bar>*{flex:1;min-width:120px}
+table{width:100%;border-collapse:collapse}
+th,td{text-align:left;padding:8px 6px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:12px;color:var(--mut);font-weight:600}
+.cd{font-variant-numeric:tabular-nums;font-weight:700;white-space:nowrap}
+.cd.soon{color:var(--soon)}.cd.crit{color:var(--crit)}
+.tag{font-size:11px;padding:1px 6px;border-radius:6px;border:1px solid var(--soon);color:var(--soon);margin-left:6px;vertical-align:2px;text-transform:uppercase}
+.f-ally{color:var(--ally);font-weight:600}.f-enemy{color:var(--enemy);font-weight:600}
+.mut{color:var(--mut);font-size:12px}
+.del{width:auto;padding:2px 8px;background:transparent;border-color:var(--line);color:var(--mut);font-weight:400}
+.empty{padding:24px;text-align:center;color:var(--mut)}
+@media(max-width:640px){th.h{display:none}td.h{display:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Bảng Trụ MEGAMU</h1>
+  <div class="sub">Nhập trụ ở dưới, mọi người cùng thấy ngay. Trụ hết hạn tự biến mất. Giờ theo giờ Việt Nam.</div>
+
+  <div class="card">
+    <form id="f" autocomplete="off">
+      <div class="grid">
+        <div><label>Server</label><input id="sv" type="number" min="1" max="30" placeholder="vd 6" required></div>
+        <div><label>Map</label><select id="map" required></select></div>
+        <div><label>Chủ trụ</label><input id="owner" placeholder="Tên nhân vật" required></div>
+        <div><label>Phe</label>
+          <div class="seg" id="seg">
+            <label class="a on"><input type="radio" name="fac" value="ally" checked><span>Ally</span></label>
+            <label class="e"><input type="radio" name="fac" value="enemy"><span>Enemy</span></label>
+          </div>
+        </div>
+      </div>
+      <div class="row2">
+        <div><label>Vị trí / tọa độ (tuỳ chọn)</label><input id="coords" placeholder="vd 226,37 hoặc Cổng đỏ bên trái"></div>
+        <div><label>Còn lại (giờ:phút:giây)</label><input id="left" placeholder="vd 23:56:10"></div>
+        <div><label>hoặc Giờ kết thúc (hôm nay/mai)</label><input id="endt" type="time" step="1"></div>
+        <div style="flex:0 0 120px"><button type="submit">Lưu trụ</button></div>
+      </div>
+      <div id="msg"></div>
+    </form>
+  </div>
+
+  <div class="bar">
+    <input id="q" placeholder="Tìm tên chủ trụ, vị trí...">
+    <select id="fsv"><option value="">Tất cả server</option></select>
+    <select id="fmap"><option value="">Tất cả map</option></select>
+    <select id="ffac"><option value="">Cả 2 phe</option><option value="ally">Ally</option><option value="enemy">Enemy</option></select>
+  </div>
+
+  <div class="card" style="padding:4px 10px">
+    <table>
+      <thead><tr><th>Còn lại</th><th>Server</th><th>Map</th><th>Chủ trụ</th><th class="h">Vị trí</th><th class="h">Hết hạn</th><th></th></tr></thead>
+      <tbody id="tb"></tbody>
+    </table>
+    <div id="empty" class="empty" style="display:none">Chưa có trụ nào đang chạy.</div>
+  </div>
+  <div class="mut" id="stat"></div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getDatabase, ref, onValue, set, remove, get } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAMtxzQ7Ug15Txu15aS5sdKyhPxAdgfUKo",
+  authDomain: "mega-tower-2c862.firebaseapp.com",
+  databaseURL: "https://mega-tower-2c862-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "mega-tower-2c862",
+  storageBucket: "mega-tower-2c862.firebasestorage.app",
+  messagingSenderId: "749697300326",
+  appId: "1:749697300326:web:3d58074494ff21ff98faa7"
+};
+const db = getDatabase(initializeApp(firebaseConfig));
+const towersRef = ref(db, "towers");
+
+const MAPS = ["Lorencia","Devias","Noria","Elbeland","Atlans","Tarkan","Icarus","Aida","Ferea","Vulcanus","Raklion","Kanturu","Dungeon","Arena","Lost Tower 1","Lost Tower 2","Lost Tower 3","Lost Tower 4","Lost Tower 5","Lost Tower 6","Lost Tower 7","Lost Tower 8"];
+const FIXED = ["1","2","3","7","10","16","17"];
+const $ = id => document.getElementById(id);
+const slug = m => m.toLowerCase().replace(/\s+/g,"");
+const pad = n => String(n).padStart(2,"0");
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+for (const m of MAPS) {
+  $("map").insertAdjacentHTML("beforeend", `<option>${m}</option>`);
+  $("fmap").insertAdjacentHTML("beforeend", `<option>${m}</option>`);
+}
+for (let i = 1; i <= 20; i++) $("fsv").insertAdjacentHTML("beforeend", `<option value="${i}">Sv${i}</option>`);
+
+document.querySelectorAll("#seg label").forEach(l => l.addEventListener("click", () => {
+  document.querySelectorAll("#seg label").forEach(x => x.classList.remove("on"));
+  l.classList.add("on");
+}));
+
+let data = {};
+let connected = false;
+onValue(towersRef, snap => { data = snap.val() || {}; connected = true; cleanup(); render(); },
+  err => { $("stat").textContent = "Lỗi kết nối dữ liệu: " + err.message; });
+
+// Xóa bản ghi đã hết hạn quá 1 phút (ai mở trang cũng dọn giúp)
+let cleaning = false;
+function cleanup() {
+  if (cleaning) return;
+  const now = Date.now();
+  const dead = Object.entries(data).filter(([k, v]) => !v || !v.exp || v.exp < now - 60000);
+  if (!dead.length) return;
+  cleaning = true;
+  Promise.all(dead.map(([k]) => remove(ref(db, "towers/" + k)).catch(() => {}))).finally(() => { cleaning = false; });
+}
+
+function fmtLeft(ms) {
+  const s = Math.max(0, Math.floor(ms / 1000));
+  return pad(Math.floor(s / 3600)) + ":" + pad(Math.floor(s % 3600 / 60)) + ":" + pad(s % 60);
+}
+function fmtEnd(ts) {
+  const d = new Date(ts + 7 * 3600000); // giờ VN
+  const today = new Date(Date.now() + 7 * 3600000);
+  const day = d.getUTCDate() === today.getUTCDate() ? "" : pad(d.getUTCDate()) + "/" + pad(d.getUTCMonth() + 1) + " ";
+  return day + pad(d.getUTCHours()) + ":" + pad(d.getUTCMinutes());
+}
+
+function render() {
+  const now = Date.now();
+  const q = $("q").value.trim().toLowerCase();
+  const fs = $("fsv").value, fm = $("fmap").value, ff = $("ffac").value;
+  const rows = Object.entries(data)
+    .filter(([k, v]) => v && v.exp > now)
+    .map(([k, v]) => ({ k, ...v }))
+    .filter(v => (!fs || String(v.server) === fs) && (!fm || v.map === fm) && (!ff || v.faction === ff) &&
+      (!q || (v.owner + " " + (v.coords || "")).toLowerCase().includes(q)))
+    .sort((a, b) => a.exp - b.exp);
+  $("tb").innerHTML = rows.map(v => {
+    const left = v.exp - now;
+    const cls = left < 15 * 60000 ? "crit" : left < 60 * 60000 ? "soon" : "";
+    const rnd = FIXED.includes(String(v.server)) ? "" : '<span class="tag">Random</span>';
+    return `<tr data-k="${esc(v.k)}"><td class="cd ${cls}" data-exp="${v.exp}">${fmtLeft(left)}</td>
+      <td>Sv${esc(v.server)}${rnd}</td><td>${esc(v.map)}</td>
+      <td class="f-${v.faction === "enemy" ? "enemy" : "ally"}">${esc(v.owner)}<div class="mut">${v.faction === "enemy" ? "Enemy" : "Ally"}</div></td>
+      <td class="h">${esc(v.coords || "")}</td><td class="h mut">${fmtEnd(v.exp)}</td>
+      <td><button class="del" title="Xóa trụ này" data-del="${esc(v.k)}">✕</button></td></tr>`;
+  }).join("");
+  $("empty").style.display = rows.length ? "none" : "block";
+  $("stat").textContent = connected ? rows.length + " trụ đang chạy" : "Đang kết nối...";
+}
+
+// Đếm ngược mỗi giây (chỉ cập nhật chữ, không vẽ lại cả bảng)
+setInterval(() => {
+  const now = Date.now();
+  let expired = false;
+  document.querySelectorAll("td.cd").forEach(td => {
+    const left = Number(td.dataset.exp) - now;
+    if (left <= 0) expired = true;
+    td.textContent = fmtLeft(left);
+    td.className = "cd " + (left < 15 * 60000 ? "crit" : left < 60 * 60000 ? "soon" : "");
+  });
+  if (expired) { render(); cleanup(); }
+}, 1000);
+
+["q", "fsv", "fmap", "ffac"].forEach(id => $(id).addEventListener("input", render));
+
+$("tb").addEventListener("click", async e => {
+  const k = e.target.dataset && e.target.dataset.del;
+  if (!k) return;
+  const v = data[k];
+  if (confirm(`Xóa trụ Sv${v.server} ${v.map} (${v.owner})?`)) await remove(ref(db, "towers/" + k));
+});
+
+function msg(t, ok) { const m = $("msg"); m.textContent = t; m.className = ok ? "good" : "err"; }
+
+$("f").addEventListener("submit", async e => {
+  e.preventDefault();
+  const server = String($("sv").value).trim();
+  const map = $("map").value;
+  const owner = $("owner").value.trim();
+  const faction = document.querySelector('input[name="fac"]:checked').value;
+  const coords = $("coords").value.trim();
+  const leftStr = $("left").value.trim();
+  const endStr = $("endt").value;
+  let exp = 0;
+  const now = Date.now();
+  if (leftStr) {
+    const p = leftStr.split(":").map(Number);
+    if (p.some(isNaN) || p.length > 3) return msg("Giờ còn lại phải dạng giờ:phút:giây, vd 23:56:10", false);
+    while (p.length < 3) p.unshift(0);
+    exp = now + (p[0] * 3600 + p[1] * 60 + p[2]) * 1000;
+  } else if (endStr) {
+    const p = endStr.split(":").map(Number);
+    const vn = new Date(now + 7 * 3600000);
+    let t = Date.UTC(vn.getUTCFullYear(), vn.getUTCMonth(), vn.getUTCDate(), p[0], p[1], p[2] || 0) - 7 * 3600000;
+    if (t < now - 3600000) t += 86400000; // giờ đã qua => hiểu là ngày mai
+    exp = t;
+  } else return msg("Nhập giờ còn lại hoặc giờ kết thúc.", false);
+  if (exp <= now) return msg("Trụ này đã hết hạn rồi.", false);
+
+  const key = "sv" + server + "_" + slug(map);
+  try {
+    const cur = (await get(ref(db, "towers/" + key))).val();
+    if (cur && cur.exp > now && Math.abs(cur.exp - exp) > 5 * 60000) {
+      const ok = confirm(`Sv${server} ${map} đang có trụ của ${cur.owner} (còn ${fmtLeft(cur.exp - now)}).\nGhi đè bằng ${owner}?`);
+      if (!ok) return;
+    }
+    await set(ref(db, "towers/" + key), { server, map, owner, faction, coords, exp });
+    msg(`Đã lưu Sv${server} ${map}.`, true);
+    $("owner").value = ""; $("coords").value = ""; $("left").value = ""; $("endt").value = "";
+  } catch (err) { msg("Lưu thất bại: " + err.message, false); }
+});
+</script>
+</body>
+</html>
