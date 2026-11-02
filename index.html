@@ -137,6 +137,23 @@ details.past .row { opacity: .7; }
 .pfoot { display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end; align-items: center; }
 .pfoot .lockn { margin-right: auto; font-size: 12px; color: var(--muted); max-width: 52ch; }
 
+.calc { gap: 12px; width: min(460px, 100%); }
+.calc .chead { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.calc h2 { margin: 0; font-size: 21px; letter-spacing: -0.01em; }
+.xbtn { border: 1px solid var(--line); background: var(--raised); border-radius: 8px; width: 34px; height: 34px; font-size: 18px; line-height: 1; padding: 0; }
+.xbtn:hover { border-color: var(--muted); }
+.ccard { background: var(--raised); border: 1px solid var(--line); border-left: 4px solid var(--accent); border-radius: 10px; padding: 12px 14px; display: grid; gap: 4px; }
+.ccard.y { border-left-color: var(--soon); }
+.ccard.g { border-left-color: var(--done); }
+.ccard .k { font-size: 13px; font-weight: 700; }
+.ccard .big { font-size: 26px; font-weight: 800; letter-spacing: -0.01em; font-variant-numeric: tabular-nums; }
+.ccard .big.blue { color: var(--accent); } .ccard .big.green { color: var(--done); }
+.ccard .tot { text-align: center; font-weight: 800; font-size: 18px; color: var(--accent); }
+input[type=range] { padding: 0; border: 0; background: transparent; accent-color: var(--accent); height: 28px; }
+.cres { border: 2px solid var(--soon); background: var(--soon-soft); border-radius: 12px; padding: 16px; text-align: center; }
+.cres .k { font-weight: 800; letter-spacing: 0.02em; text-transform: uppercase; font-size: 14px; }
+.cres .v { font-size: 44px; font-weight: 800; line-height: 1.1; color: var(--soon); font-variant-numeric: tabular-nums; }
+.cres .s { font-size: 12px; color: var(--muted); margin-top: 2px; }
 .toasts { position: fixed; z-index: 40; left: max(12px, env(safe-area-inset-left, 0px)); right: max(12px, env(safe-area-inset-right, 0px)); bottom: calc(12px + env(safe-area-inset-bottom, 0px)); display: grid; gap: 8px; justify-items: center; pointer-events: none; }
 .toast { pointer-events: auto; width: min(560px, 100%); display: flex; gap: 12px; align-items: center; background: var(--ink); color: var(--bg); border-radius: 10px; padding: 12px 14px; font-weight: 600; box-shadow: 0 8px 28px rgba(0,0,0,.5); }
 .toast span { flex: 1; min-width: 0; overflow-wrap: anywhere; }
@@ -173,6 +190,7 @@ details.past .row { opacity: .7; }
 
   <div class="bar">
     <button class="btn primary" id="addBtn" type="button">+ Thêm Tower</button>
+    <button class="btn" id="calcBtn" type="button">Tính ngọc</button>
     <label style="display:flex; align-items:center; gap:6px; font-size:13px; color:var(--muted);">Nhắc trước
       <select id="alertMin" class="btn small" aria-label="Nhắc trước bao nhiêu phút">
         <option value="0">Tắt</option><option value="5">5 phút</option><option value="10">10 phút</option><option value="15">15 phút</option><option value="20">20 phút</option>
@@ -242,6 +260,18 @@ details.past .row { opacity: .7; }
       <button class="btn" id="pCancel" type="button">Huỷ</button>
       <button class="btn primary" id="pSave" type="button">Thêm Tower</button>
     </div>
+  </div>
+</div>
+
+<div class="scrim" id="calcScrim" hidden>
+  <div class="panel calc" role="dialog" aria-modal="true" aria-labelledby="cTitle">
+    <div class="chead"><h2 id="cTitle">Tính số ngọc cần thiết</h2><button class="xbtn" id="cClose" type="button" aria-label="Đóng">×</button></div>
+    <div class="ccard"><span class="k">Giờ hiện tại (GMT+7):</span><span class="big blue" id="cNow">--/-- --:--:--</span></div>
+    <div class="ccard y"><label class="k" for="cSlide" style="font-size:13px;color:var(--ink)">Giờ thêm: <span id="cExtra">0</span></label>
+      <input id="cSlide" type="range" min="0" max="44" step="1" value="0">
+      <span class="tot" id="cTotal">Total: 2h (Miễn phí)</span></div>
+    <div class="ccard"><span class="k">Giờ mở khóa:</span><span class="big green" id="cUnlock">--/-- --:--:--</span></div>
+    <div class="cres"><div class="k">Ngọc cần thiết:</div><div class="v" id="cGems">0</div><div class="s" id="cNote"></div></div>
   </div>
 </div>
 
@@ -406,6 +436,7 @@ function tick() {
   filtered(now).forEach(function (t) { if (t.faction === "enemy" && t.exp > now && (!next || t.exp < next.exp)) next = t; });
   document.title = next ? "(" + hms(next.exp - now).slice(next.exp - now >= 3600e3 ? 0 : 3) + ") Bảng Tower MEGAMU" : "Bảng Tower MEGAMU";
   if (!$("scrim").hidden) updateEst();
+  if (!$("calcScrim").hidden) updateCalc();
 }
 
 /* ---- bộ lọc và điều khiển ---- */
@@ -424,6 +455,25 @@ function tick() {
   sb.addEventListener("click", function () { soundOn = !soundOn; persist(); sbl(); if (soundOn) beep(); });
   sbl();
 })();
+/* ---- máy tính ngọc ---- */
+var GEM_STEP = [5,7,10,14,19,25,31,38,45,54,62,72,82,92,103,115,127,140,153,166,180,195,210,226,241,258,275,292,310,328,347,366,385,405,425,446,467,488,510,533,555,578,602,626];
+var GEM_SUM = [0]; GEM_STEP.forEach(function (c, i) { GEM_SUM.push(GEM_SUM[i] + c); }); // GEM_SUM[k] = tổng ngọc cho k giờ thêm
+var FREE_H = 2;
+function dt(ms) { var d = vp(ms); return pad(d.getUTCDate()) + "/" + pad(d.getUTCMonth() + 1) + " " + pad(d.getUTCHours()) + ":" + pad(d.getUTCMinutes()) + ":" + pad(d.getUTCSeconds()); }
+function updateCalc() {
+  var k = +$("cSlide").value, now = Date.now();
+  $("cNow").textContent = dt(now);
+  $("cExtra").textContent = k === 0 ? "0" : "+" + k + "h";
+  $("cTotal").textContent = "Total: " + (FREE_H + k) + "h" + (k === 0 ? " (Miễn phí)" : "");
+  $("cUnlock").textContent = dt(now + (FREE_H + k) * 3600e3);
+  $("cGems").textContent = GEM_SUM[k].toLocaleString("vi-VN");
+  $("cNote").textContent = k === 0 ? "" : "Giờ thứ " + k + " tốn " + GEM_STEP[k - 1] + " ngọc";
+}
+$("calcBtn").addEventListener("click", function () { $("calcScrim").hidden = false; updateCalc(); });
+$("cClose").addEventListener("click", function () { $("calcScrim").hidden = true; });
+$("calcScrim").addEventListener("mousedown", function (e) { if (e.target === this) this.hidden = true; });
+$("cSlide").addEventListener("input", updateCalc);
+
 /* ---- form thêm Tower ---- */
 function num(id) { var v = $(id).value.trim(); return v === "" ? 0 : (/^\d+$/.test(v) ? +v : NaN); }
 function leftMs() {
@@ -468,7 +518,7 @@ function fail(msg) { var e = $("pErr"); e.textContent = msg; e.hidden = false; }
 $("addBtn").addEventListener("click", openPanel);
 $("pCancel").addEventListener("click", closePanel);
 $("scrim").addEventListener("mousedown", function (e) { if (e.target === this) closePanel(); });
-document.addEventListener("keydown", function (e) { if (e.key === "Escape" && !$("scrim").hidden) closePanel(); });
+document.addEventListener("keydown", function (e) { if (e.key !== "Escape") return; if (!$("scrim").hidden) closePanel(); if (!$("calcScrim").hidden) $("calcScrim").hidden = true; });
 
 $("pSave").addEventListener("click", async function () {
   $("pErr").hidden = true;
