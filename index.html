@@ -83,7 +83,9 @@ select option { background: var(--surface); color: var(--ink); }
 .day + .row { border-top: 0; }
 .row.b-soon { background: var(--soon-soft); box-shadow: inset 4px 0 0 var(--soon); }
 .row.b-hot { background: var(--hot-soft); box-shadow: inset 4px 0 0 var(--hot); }
-.row.b-win, .row.b-done { background: var(--done-soft); box-shadow: inset 4px 0 0 var(--done); }
+.row.b-win { background: var(--done-soft); box-shadow: inset 4px 0 0 var(--done); }
+.row.b-done { background: var(--field); box-shadow: inset 4px 0 0 var(--line); opacity: .55; }
+.row.b-done, .row.b-done * { color: var(--muted) !important; text-decoration: line-through; }
 .srv { font-weight: 800; font-size: 20px; letter-spacing: -0.02em; line-height: 1.2; }
 .mapline { margin-top: 2px; font-size: 14px; color: var(--muted); display: flex; flex-wrap: wrap; gap: 0 8px; align-items: baseline; }
 .mapline .m { color: var(--ink); font-weight: 600; }
@@ -95,7 +97,7 @@ select option { background: var(--surface); color: var(--ink); }
 .at .d { font-size: 12px; color: var(--muted); }
 .at .w { font-size: 12px; color: var(--muted); }
 .left { font-weight: 700; font-size: 17px; letter-spacing: -0.01em; }
-.b-soon .left { color: var(--soon); } .b-hot .left { color: var(--hot); } .b-win .left, .b-done .left { color: var(--done); }
+.b-soon .left { color: var(--soon); } .b-hot .left { color: var(--hot); } .b-win .left { color: var(--done); }
 .prep { font-weight: 800; font-size: 30px; line-height: 1; letter-spacing: -0.02em; color: var(--hot); }
 .go { font-weight: 800; color: var(--done); }
 .dash { color: var(--muted); }
@@ -298,9 +300,9 @@ var firebaseConfig = {
   appId: "1:749697300326:web:3d58074494ff21ff98faa7"
 };
 var MAPS = ["Lorencia","Dungeon","Devias","Noria","Lost Tower 1","Lost Tower 2","Lost Tower 3","Lost Tower 4","Lost Tower 5","Lost Tower 6","Lost Tower 7","Arena","Atlans","Tarkan","Icarus","Aida","Kanturu","Elbeland","Raklion","Vulcanus","Ferea"];
-var VN = 7 * 3600e3, TOL = 0, PAST_MS = 0; // TOL = 0: hết hạn đúng giờ nhập, không cộng trừ
+var VN = 7 * 3600e3, TOL = 0, PAST_MS = 0, GRACE = 5 * 60e3; // TOL = 0: hết hạn đúng giờ nhập. GRACE: Tower vừa hết hạn vẫn hiện (xám, gạch ngang) thêm 5 phút rồi mới xoá
 
-var FIXED_SV = ["1", "2", "3", "7", "10", "16", "17"]; // server có vị trí Tower cố định; các server còn lại là Random
+var FIXED_SV = ["1", "2", "3", "10", "16", "17"]; // server có vị trí Tower cố định; các server còn lại là Random
 function isRandom(sv) { return FIXED_SV.indexOf(String(sv)) < 0; }
 function $(id) { return document.getElementById(id); }
 function pad(n) { return String(n).padStart(2, "0"); }
@@ -332,7 +334,7 @@ function boot() {
     Object.keys(raw).forEach(function (id) {
       var v = raw[id] || {};
       if (typeof v.exp !== "number" || !v.server || !v.map) return;
-      if (v.exp < now - 60000) { remove(ref(fdb, "towers/" + id)).catch(function () {}); return; } // dọn Tower đã hết hạn
+      if (v.exp < now - GRACE) { remove(ref(fdb, "towers/" + id)).catch(function () {}); return; } // dọn Tower đã hết hạn
       next[id] = { id: id, server: String(v.server), map: String(v.map), coords: String(v.coords || ""), owner: String(v.owner || ""), faction: v.faction === "ally" ? "ally" : "enemy", exp: v.exp };
     });
     towers = next; loaded = true; loadError = ""; fullRender(); checkDupe();
@@ -386,7 +388,7 @@ function bucket(t, now) {
 function filtered(now) {
   var q = plain($("q").value.trim()), sv = $("fSv").value, mp = $("fMap").value, ph = $("fPh").value, ft = $("fT").value;
   return Object.keys(towers).map(function (k) { return towers[k]; }).filter(function (t) {
-    if (now > t.exp + TOL) return false; // đếm hết thì loại khỏi danh sách
+    if (now > t.exp + GRACE) return false; // hết hạn quá 5 phút thì loại khỏi danh sách
     if (sv && t.server !== sv) return false;
     if (mp && t.map !== mp) return false;
     if (ph && t.faction !== ph) return false;
@@ -408,8 +410,8 @@ function rowHtml(t, now) {
 function fullRender() {
   var now = Date.now(), all = Object.keys(towers).map(function (k) { return towers[k]; });
   var list = filtered(now);
-  var act = list.filter(function (t) { return now - (t.exp + TOL) <= PAST_MS; });
-  var past = list.filter(function (t) { return now - (t.exp + TOL) > PAST_MS; }).sort(function (a, b) { return b.exp - a.exp; });
+  var act = list.filter(function (t) { return now - (t.exp + GRACE) <= PAST_MS; });
+  var past = list.filter(function (t) { return now - (t.exp + GRACE) > PAST_MS; }).sort(function (a, b) { return b.exp - a.exp; });
   var html = "", lastDay = "";
   act.forEach(function (t) {
     var k = dKey(t.exp);
@@ -423,12 +425,12 @@ function fullRender() {
       : '<div class="empty"><strong>Chưa có Tower nào</strong><span>Bấm “Thêm Tower” để nhập Tower đầu tiên.</span></div>';
   }
   $("rows").innerHTML = html;
-  var live = all.filter(function (t) { return now - (t.exp + TOL) <= PAST_MS; });
+  var live = all.filter(function (t) { return t.exp > now; }); // chỉ đếm Tower đang chạy
   var en = live.filter(function (t) { return t.faction === "enemy"; }).length;
   $("chips").innerHTML = '<span class="chip"><b>' + live.length + '</b> tổng Tower</span><span class="chip enemy"><b>' + en + '</b> Enemy</span><span class="chip ally"><b>' + (live.length - en) + '</b> Ally</span>';
   lastSig = sig(list, now);
 }
-function sig(list, now) { return list.map(function (t) { return t.id + t.exp + bucket(t, now) + (now - (t.exp + TOL) > PAST_MS ? "p" : ""); }).join(","); }
+function sig(list, now) { return list.map(function (t) { return t.id + t.exp + bucket(t, now) + (now - (t.exp + GRACE) > PAST_MS ? "p" : ""); }).join(","); }
 function tick() {
   var now = Date.now();
   $("clock").textContent = tOf(now); $("today").textContent = dShort(now);
