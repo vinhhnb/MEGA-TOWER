@@ -135,6 +135,13 @@ details.past .row { opacity: .7; }
 .est .v { font-size: 22px; font-weight: 800; letter-spacing: -0.01em; }
 .est .r { font-size: 13px; color: var(--muted); }
 .est.ok { border-color: #1d5a47; background: var(--done-soft); } .est.ok .v { color: var(--done); }
+.alert.warn { background: var(--soon-soft); color: var(--soon); border-color: #5a4417; }
+.ed { margin-left: 6px; font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: 6px; border: 1px solid var(--line); color: var(--muted); vertical-align: 2px; }
+.cmp { display: grid; gap: 10px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.cmp .est .v { font-size: 17px; overflow-wrap: anywhere; }
+.cmp .est .r { font-size: 13px; color: var(--ink); }
+.cmp .est.new { border-color: var(--accent); }
+@media (max-width: 520px) { .cmp { grid-template-columns: minmax(0, 1fr); } }
 .alert { border-radius: 10px; padding: 10px 14px; font-size: 14px; background: var(--hot-soft); color: var(--hot); border: 1px solid #5a2328; }
 .pfoot { display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end; align-items: center; }
 .pfoot .lockn { margin-right: auto; font-size: 12px; color: var(--muted); max-width: 52ch; }
@@ -253,7 +260,7 @@ input[type=range] { padding: 0; border: 0; background: transparent; accent-color
     <div id="pErr" class="alert" role="alert" hidden></div>
 
     <div class="pfoot">
-      <span class="lockn">Sau khi thêm, dữ liệu bị khoá: không sửa hay xoá được. Kiểm tra kỹ trước khi bấm.</span>
+      <span class="lockn">Dữ liệu chỉ được sửa 1 lần duy nhất, không xoá được. Kiểm tra kỹ trước khi bấm.</span>
       <button class="btn" id="pCancel" type="button">Huỷ</button>
       <button class="btn primary" id="pSave" type="button">Thêm Tower</button>
     </div>
@@ -281,6 +288,22 @@ input[type=range] { padding: 0; border: 0; background: transparent; accent-color
       <div class="est"><span class="k">Tổng thời gian giữ</span><span class="v" id="cTotal">2 giờ</span><span class="r" id="cFree"></span></div>
       <div class="est"><span class="k">Hết hạn lúc (giờ VN)</span><span class="v" id="cUnlock">—</span><span class="r" id="cNow"></span></div>
       <div class="est hero"><span class="k">Ngọc cần dùng</span><span class="v" id="cGems">0</span><span class="r" id="cNote"></span></div>
+    </div>
+  </div>
+</div>
+
+<div class="scrim" id="confirmScrim" hidden>
+  <div class="panel" role="alertdialog" aria-modal="true" aria-labelledby="kTitle">
+    <div class="phead"><div><h2 id="kTitle">Sửa dữ liệu Tower?</h2><p class="lead" id="kLead"></p></div></div>
+    <div class="cmp">
+      <div class="est"><span class="k">Dữ liệu hiện tại</span><span class="v" id="kOldV"></span><span class="r" id="kOldR"></span></div>
+      <div class="est new"><span class="k">Dữ liệu mới</span><span class="v" id="kNewV"></span><span class="r" id="kNewR"></span></div>
+    </div>
+    <div class="alert warn" role="alert"><b>Cảnh báo:</b> mỗi Tower chỉ được sửa <b>1 lần duy nhất</b>. Sau khi xác nhận, không ai (kể cả bạn) sửa lại được nữa cho đến khi Tower hết hạn. Kiểm tra kỹ trước khi bấm.</div>
+    <div id="kErr" class="alert" role="alert" hidden></div>
+    <div class="pfoot">
+      <button class="btn" id="kCancel" type="button">Huỷ</button>
+      <button class="btn primary" id="kOk" type="button">Xác nhận sửa</button>
     </div>
   </div>
 </div>
@@ -335,7 +358,7 @@ function boot() {
       var v = raw[id] || {};
       if (typeof v.exp !== "number" || !v.server || !v.map) return;
       if (v.exp < now - GRACE) { remove(ref(fdb, "towers/" + id)).catch(function () {}); return; } // dọn Tower đã hết hạn
-      next[id] = { id: id, server: String(v.server), map: String(v.map), coords: String(v.coords || ""), owner: String(v.owner || ""), faction: v.faction === "ally" ? "ally" : "enemy", exp: v.exp };
+      next[id] = { id: id, server: String(v.server), map: String(v.map), coords: String(v.coords || ""), owner: String(v.owner || ""), faction: v.faction === "ally" ? "ally" : "enemy", exp: v.exp, edits: v.edits ? 1 : 0 };
     });
     towers = next; loaded = true; loadError = ""; fullRender(); checkDupe();
   }, function (e) { loaded = true; loadError = "Mất kết nối dữ liệu (" + (e && e.code || "lỗi") + "). Tải lại trang."; fullRender(); });
@@ -402,7 +425,7 @@ function rowHtml(t, now) {
   var prep = b === "hot" ? '<div class="prep" data-to="' + t.exp + '">' + ms2(left) + '</div>' : '';
   return '<div class="row b-' + b + '" data-id="' + esc(t.id) + '">' +
     '<div class="c-where"><div class="srv">Sv' + esc(t.server) + (isRandom(t.server) ? '<span class="rd">Random</span>' : '') + '</div><div class="mapline"><span class="m">' + esc(t.map) + '</span><span>' + esc(t.coords) + '</span></div></div>' +
-    '<div class="c-owner"><div class="owner">' + (esc(t.owner) || "—") + '</div><span class="ph ' + t.faction + '">' + (t.faction === "ally" ? "Ally" : "Enemy") + '</span></div>' +
+    '<div class="c-owner"><div class="owner">' + (esc(t.owner) || "—") + '</div><span class="ph ' + t.faction + '">' + (t.faction === "ally" ? "Ally" : "Enemy") + '</span>' + (t.edits ? '<span class="ed">Đã sửa</span>' : '') + '</div>' +
     '<div class="c-at at"><div class="t">' + tOf(t.exp) + '</div><div class="d">' + dShort(t.exp) + '</div></div>' +
     '<div class="c-left left" data-at="' + t.exp + '">' + hms(Math.max(0, left)) + '</div>' +
     '<div class="c-prep' + (prep ? "" : " none") + '">' + prep + '</div></div>';
@@ -430,7 +453,7 @@ function fullRender() {
   $("chips").innerHTML = '<span class="chip"><b>' + live.length + '</b> tổng Tower</span><span class="chip enemy"><b>' + en + '</b> Enemy</span><span class="chip ally"><b>' + (live.length - en) + '</b> Ally</span>';
   lastSig = sig(list, now);
 }
-function sig(list, now) { return list.map(function (t) { return t.id + t.exp + bucket(t, now) + (now - (t.exp + GRACE) > PAST_MS ? "p" : ""); }).join(","); }
+function sig(list, now) { return list.map(function (t) { return t.id + t.exp + t.edits + bucket(t, now) + (now - (t.exp + GRACE) > PAST_MS ? "p" : ""); }).join(","); }
 function tick() {
   var now = Date.now();
   $("clock").textContent = tOf(now); $("today").textContent = dShort(now);
@@ -520,9 +543,17 @@ function checkDupe() {
   var t = $("scrim").hidden ? null : existingFor(), box = $("dupe");
   if (t) {
     box.hidden = false;
-    box.textContent = "Sv" + t.server + " " + t.map + " đã có Tower (" + (t.owner || "?") + ", " + t.coords + ", hết hạn " + tOf(t.exp) + "). Mỗi map chỉ có một Tower và không ghi đè được. Nhập lại được sau khi Tower này đếm hết.";
+    var info = "Sv" + t.server + " " + t.map + " đã có Tower (" + (t.owner || "?") + ", " + t.coords + ", hết hạn " + tOf(t.exp) + ").";
+    if (t.edits) {
+      box.className = "alert";
+      box.textContent = info + " Tower này đã được sửa 1 lần nên không sửa thêm được. Nhập lại được sau khi Tower hết hạn.";
+    } else {
+      box.className = "alert warn";
+      box.textContent = info + " Nếu dữ liệu trước nhập nhầm, bấm Sửa Tower để thay bằng dữ liệu mới. Mỗi Tower chỉ sửa được 1 lần.";
+    }
   } else box.hidden = true;
-  $("pSave").disabled = !!t;
+  $("pSave").disabled = !!(t && t.edits);
+  $("pSave").textContent = t && !t.edits ? "Sửa Tower" : "Thêm Tower";
 }
 ["iSv", "iMap"].forEach(function (id) { $(id).addEventListener("input", checkDupe); });
 ["iX", "iY", "iH", "iM", "iS"].forEach(function (id) { $(id).addEventListener("input", function () { this.value = this.value.replace(/\D/g, ""); updateEst(); }); });
@@ -538,8 +569,19 @@ function fail(msg) { var e = $("pErr"); e.textContent = msg; e.hidden = false; }
 $("addBtn").addEventListener("click", openPanel);
 $("pCancel").addEventListener("click", closePanel);
 $("scrim").addEventListener("mousedown", function (e) { if (e.target === this) closePanel(); });
-document.addEventListener("keydown", function (e) { if (e.key !== "Escape") return; if (!$("scrim").hidden) closePanel(); if (!$("calcScrim").hidden) $("calcScrim").hidden = true; });
+document.addEventListener("keydown", function (e) { if (e.key !== "Escape") return; if (!$("confirmScrim").hidden) { pending = null; $("confirmScrim").hidden = true; return; } if (!$("scrim").hidden) closePanel(); if (!$("calcScrim").hidden) $("calcScrim").hidden = true; });
 
+var pending = null;
+function descTower(t) { return { v: (t.owner || "?") + " · " + (t.faction === "ally" ? "Ally" : "Enemy"), r: "Toạ độ " + (t.coords || "—") + " · hết hạn " + tOf(t.exp) + " " + dShort(t.exp) }; }
+function friendly(e) {
+  var c = e && (e.code || e.message) || "lỗi";
+  return /PERMISSION_DENIED|permission/i.test(String(c)) ? "Không lưu được: Tower này vừa được người khác sửa hoặc đã bị khoá. Tải lại trang rồi kiểm tra." : "Không lưu được (" + c + "). Thử lại.";
+}
+async function writeTower(rec, editMode) {
+  var payload = { server: rec.server, map: rec.map, coords: rec.coords, owner: rec.owner, faction: rec.faction, exp: rec.exp, upd: Date.now() };
+  if (editMode) payload.edits = 1;
+  await set(ref(fdb, "towers/" + rec.id), payload);
+}
 $("pSave").addEventListener("click", async function () {
   $("pErr").hidden = true;
   var sv = $("iSv").value, map = $("iMap").value, x = $("iX").value.trim(), y = $("iY").value.trim(), owner = $("iOwner").value.trim(), ph = $("iPh").value, l = leftMs();
@@ -550,16 +592,45 @@ $("pSave").addEventListener("click", async function () {
   try {
     var snap = await get(ref(fdb, "towers/" + id));           // kiểm tra lại ngay trước khi ghi, phòng người khác vừa thêm
     var cur = snap.exists() ? snap.val() : null;
+    var rec = { id: id, server: sv, map: map, coords: (+x) + "," + (+y), owner: owner, faction: ph, exp: Math.round(Date.now() + l) };
     if (cur && typeof cur.exp === "number" && Date.now() <= cur.exp + TOL) {
       btn.disabled = false;
-      return fail("Sv" + sv + " " + map + " đã có Tower (" + (cur.owner || "?") + ", hết hạn " + (typeof cur.exp === "number" ? tOf(cur.exp) : "?") + "). Không ghi đè được.");
+      if (cur.edits) return fail("Sv" + sv + " " + map + " đã được sửa 1 lần, không sửa thêm được. Nhập lại được sau khi Tower hết hạn.");
+      pending = { rec: rec, cur: cur };                       // đã có Tower còn hạn: hỏi xác nhận sửa
+      var o = descTower({ owner: cur.owner, faction: cur.faction, coords: cur.coords, exp: cur.exp }), n = descTower(rec);
+      $("kLead").textContent = "Sv" + sv + " " + map + " đã có dữ liệu. Bạn muốn thay bằng dữ liệu mới bên dưới?";
+      $("kOldV").textContent = o.v; $("kOldR").textContent = o.r;
+      $("kNewV").textContent = n.v; $("kNewR").textContent = n.r;
+      $("kErr").hidden = true; $("kOk").disabled = false;
+      $("confirmScrim").hidden = false;
+      return;
     }
-    var exp = Math.round(Date.now() + l);
-    await set(ref(fdb, "towers/" + id), { server: sv, map: map, coords: (+x) + "," + (+y), owner: owner, faction: ph, exp: exp, upd: Date.now() });
-    toast("Đã thêm Sv" + sv + " " + map + ". Hết hạn " + tOf(exp) + ".");
+    await writeTower(rec, false);
+    toast("Đã thêm Sv" + sv + " " + map + ". Hết hạn " + tOf(rec.exp) + ".");
     closePanel();
   } catch (e) {
-    fail("Không lưu được (" + (e && (e.code || e.message) || "lỗi") + "). Thử lại.");
+    fail(friendly(e));
+  }
+  btn.disabled = false;
+});
+$("kCancel").addEventListener("click", function () { pending = null; $("confirmScrim").hidden = true; });
+$("kOk").addEventListener("click", async function () {
+  if (!pending) return;
+  var btn = this, rec = pending.rec, old = pending.cur;
+  btn.disabled = true; $("kErr").hidden = true;
+  try {
+    var snap = await get(ref(fdb, "towers/" + rec.id));        // kiểm tra lần cuối: dữ liệu có còn như lúc hỏi không
+    var cur = snap.exists() ? snap.val() : null;
+    if (!cur || cur.edits || cur.exp !== old.exp || cur.owner !== old.owner) {
+      throw new Error(cur && cur.edits ? "Tower này vừa được người khác sửa." : "Dữ liệu Tower vừa thay đổi. Đóng cửa sổ rồi kiểm tra lại.");
+    }
+    rec.exp = Math.round(Date.now() + leftMs());              // tính lại giờ hết hạn từ lúc xác nhận
+    await writeTower(rec, true);
+    pending = null; $("confirmScrim").hidden = true;
+    toast("Đã sửa Sv" + rec.server + " " + rec.map + ". Tower này không sửa thêm được nữa.");
+    closePanel();
+  } catch (e) {
+    var m = $("kErr"); m.textContent = (e && /^(Tower|Dữ liệu)/.test(e.message)) ? e.message : friendly(e); m.hidden = false;
   }
   btn.disabled = false;
 });
