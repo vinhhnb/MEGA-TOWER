@@ -49,6 +49,8 @@ h1 { margin: 2px 0 0; font-size: 26px; letter-spacing: -0.015em; text-wrap: bala
 .clockbox .lbl { font-size: 12px; color: var(--muted); }
 .clock { font-weight: 700; font-size: 28px; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
 .clockbox .date { font-size: 13px; color: var(--muted); }
+.clockbox .br { margin-top: 4px; font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.clockbox .br b { color: var(--ink); font-weight: 600; }
 
 .bar { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; }
 .btn { border: 1px solid var(--line); background: var(--raised); border-radius: 8px; padding: 8px 14px; font-weight: 600; font-size: 14px; }
@@ -189,6 +191,7 @@ input[type=range] { padding: 0; border: 0; background: transparent; accent-color
       <div class="lbl">Giờ Việt Nam · UTC+7</div>
       <div class="clock" id="clock">--:--:--</div>
       <div class="date" id="today"></div>
+      <div class="br" title="Giờ Brasília, UTC-3">Giờ Brazil · UTC-3: <b id="brClock">--:--:--</b> <span id="brDate"></span></div>
     </div>
   </header>
 
@@ -325,7 +328,7 @@ var firebaseConfig = {
 var MAPS = ["Lorencia","Dungeon","Devias","Noria","Lost Tower 1","Lost Tower 2","Lost Tower 3","Lost Tower 4","Lost Tower 5","Lost Tower 6","Lost Tower 7","Arena","Atlans","Tarkan","Icarus","Aida","Kanturu","Elbeland","Raklion","Vulcanus","Ferea"];
 var VN = 7 * 3600e3, TOL = 0, PAST_MS = 0, GRACE = 5 * 60e3; // TOL = 0: hết hạn đúng giờ nhập. GRACE: Tower vừa hết hạn vẫn hiện (xám, gạch ngang) thêm 5 phút rồi mới xoá
 
-var FIXED_SV = ["1", "2", "3", "10", "16", "17"]; // server có vị trí Tower cố định; các server còn lại là Random
+var FIXED_SV = ["1", "2", "3", "10", "16", "17", "18"]; // server có vị trí Tower cố định; các server còn lại là Random
 function isRandom(sv) { return FIXED_SV.indexOf(String(sv)) < 0; }
 function $(id) { return document.getElementById(id); }
 function pad(n) { return String(n).padStart(2, "0"); }
@@ -457,6 +460,7 @@ function sig(list, now) { return list.map(function (t) { return t.id + t.exp + t
 function tick() {
   var now = Date.now();
   $("clock").textContent = tOf(now); $("today").textContent = dShort(now);
+  var b = new Date(now - 3 * 3600000); $("brClock").textContent = pad(b.getUTCHours()) + ":" + pad(b.getUTCMinutes()) + ":" + pad(b.getUTCSeconds()); $("brDate").textContent = "· " + pad(b.getUTCDate()) + "/" + pad(b.getUTCMonth() + 1);
   if (sig(filtered(now), now) !== lastSig) fullRender();
   else {
     var a = document.querySelectorAll("[data-at]"), i;
