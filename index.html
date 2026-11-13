@@ -24,6 +24,8 @@
   --enemy-soft: #351b21;
   --ally: #4fd1a1;
   --ally-soft: #10292a;
+  --unk: #b79bff;
+  --unk-soft: #1f1a33;
   --font: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   color-scheme: dark;
 }
@@ -95,6 +97,27 @@ select option { background: var(--surface); color: var(--ink); }
 .ph { display: inline-block; margin-top: 3px; padding: 1px 8px; border-radius: 6px; font-size: 12px; font-weight: 700; }
 .ph.enemy { background: var(--enemy-soft); color: var(--enemy); }
 .ph.ally { background: var(--ally-soft); color: var(--ally); }
+.ph.unknown { background: var(--unk-soft); color: var(--unk); }
+.stats { margin-top: 14px; }
+.board { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); background: var(--surface); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; }
+.board .side { display: flex; align-items: center; gap: 14px; padding: 10px 22px; min-width: 0; }
+.board .side.a { background: linear-gradient(90deg, rgba(79,209,161,.16), transparent 85%); border-left: 4px solid var(--ally); }
+.board .side.e { background: linear-gradient(270deg, rgba(255,122,133,.16), transparent 85%); border-right: 4px solid var(--enemy); flex-direction: row-reverse; text-align: right; }
+.board .side b { font-size: 46px; font-weight: 900; line-height: 1; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; }
+.board .a b { color: var(--ally); } .board .e b { color: var(--enemy); }
+.board .side span { font-size: 12px; font-weight: 800; letter-spacing: .18em; text-transform: uppercase; color: var(--muted); }
+.board .mid { display: grid; justify-items: center; align-content: center; gap: 2px; padding: 8px 22px; background: var(--field); border-left: 1px solid var(--line); border-right: 1px solid var(--line); text-align: center; }
+.board .mid b { font-size: 28px; font-weight: 800; line-height: 1; font-variant-numeric: tabular-nums; }
+.board .mid .t { font-size: 10.5px; font-weight: 700; letter-spacing: .16em; color: var(--muted); }
+.board .mid .sub { display: flex; gap: 14px; margin-top: 4px; font-size: 12px; font-weight: 600; color: var(--muted); white-space: nowrap; }
+.board .mid .sub b { font-size: 14px; font-weight: 800; margin-right: 4px; }
+.board .mid .sub .u b { color: var(--unk); } .board .mid .sub .n b { color: var(--ink); }
+@media (max-width: 700px) {
+  .board { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+  .board .mid { grid-column: 1 / -1; grid-row: 2; border: 0; border-top: 1px solid var(--line); padding: 8px 12px; }
+  .board .side { padding: 10px 14px; gap: 10px; } .board .side b { font-size: 38px; } .board .side span { letter-spacing: .12em; }
+  .board .side.e { border-right: 4px solid var(--enemy); }
+}
 .at .t { font-weight: 700; font-size: 16px; }
 .at .d { font-size: 12px; color: var(--muted); }
 .at .w { font-size: 12px; color: var(--muted); }
@@ -203,15 +226,14 @@ input[type=range] { padding: 0; border: 0; background: transparent; accent-color
         <option value="0">Tắt</option><option value="5">5 phút</option><option value="10">10 phút</option><option value="15">15 phút</option><option value="20">20 phút</option>
       </select>
     </label>
-    <button class="btn small" id="soundBtn" type="button" aria-pressed="true">Tiếng: bật</button>
-    <div class="chips" id="chips" aria-live="polite"></div>
   </div>
+  <section class="stats" aria-label="Tổng quan Tower" aria-live="polite"><div class="board" id="stats"></div></section>
 
   <section class="filters" aria-label="Bộ lọc">
     <div class="f"><label for="q">Tìm kiếm</label><input id="q" type="search" placeholder="Map, chủ Tower, server, toạ độ…" autocomplete="off"></div>
     <div class="f"><label for="fSv">Server</label><select id="fSv"><option value="">Tất cả</option></select></div>
     <div class="f"><label for="fMap">Map</label><select id="fMap"><option value="">Tất cả map</option></select></div>
-    <div class="f"><label for="fPh">Phe</label><select id="fPh"><option value="">Tất cả phe</option><option value="enemy">Enemy</option><option value="ally">Ally</option></select></div>
+    <div class="f"><label for="fPh">Phe</label><select id="fPh"><option value="">Tất cả phe</option><option value="enemy">Enemy</option><option value="ally">Ally</option><option value="unknown">Unknown</option></select></div>
     <div class="f"><label for="fT">Còn lại</label>
       <select id="fT"><option value="">Tất cả</option><option value="15">≤ 15 phút</option><option value="60">≤ 1 giờ</option><option value="180">≤ 3 giờ</option><option value="360">≤ 6 giờ</option></select></div>
   </section>
@@ -243,7 +265,7 @@ input[type=range] { padding: 0; border: 0; background: transparent; accent-color
       <div class="fld"><label for="iX">Toạ độ X <b>*</b></label><input id="iX" inputmode="numeric" maxlength="3" autocomplete="off" placeholder="225"></div>
       <div class="fld"><label for="iY">Toạ độ Y <b>*</b></label><input id="iY" inputmode="numeric" maxlength="3" autocomplete="off" placeholder="44"></div>
       <div class="fld"><label for="iOwner">Chủ sở hữu <b>*</b></label><input id="iOwner" maxlength="20" autocomplete="off" placeholder="Tên nhân vật giữ Tower"></div>
-      <div class="fld"><label for="iPh">Phe <b>*</b></label><select id="iPh"><option value="">Chọn Phe</option><option value="enemy">Enemy</option><option value="ally">Ally</option></select></div>
+      <div class="fld"><label for="iPh">Phe <b>*</b></label><select id="iPh"><option value="">Chọn Phe</option><option value="enemy">Enemy</option><option value="ally">Ally</option><option value="unknown">Unknown</option></select></div>
     </div>
 
     <div id="dupe" class="alert" role="alert" hidden></div>
@@ -328,6 +350,8 @@ var firebaseConfig = {
 var MAPS = ["Lorencia","Dungeon","Devias","Noria","Lost Tower 1","Lost Tower 2","Lost Tower 3","Lost Tower 4","Lost Tower 5","Lost Tower 6","Lost Tower 7","Arena","Atlans","Tarkan","Icarus","Aida","Kanturu","Elbeland","Raklion","Vulcanus","Ferea"];
 var VN = 7 * 3600e3, TOL = 0, PAST_MS = 0, GRACE = 5 * 60e3; // TOL = 0: hết hạn đúng giờ nhập. GRACE: Tower vừa hết hạn vẫn hiện (xám, gạch ngang) thêm 5 phút rồi mới xoá
 
+var FACT_LB = { ally: "Ally", enemy: "Enemy", unknown: "Unknown" };
+var TOTAL_TOWERS = 240; // tổng số Tower trong game
 var FIXED_SV = ["1", "2", "3", "10", "16", "17", "18"]; // server có vị trí Tower cố định; các server còn lại là Random
 function isRandom(sv) { return FIXED_SV.indexOf(String(sv)) < 0; }
 function $(id) { return document.getElementById(id); }
@@ -361,17 +385,17 @@ function boot() {
       var v = raw[id] || {};
       if (typeof v.exp !== "number" || !v.server || !v.map) return;
       if (v.exp < now - GRACE) { remove(ref(fdb, "towers/" + id)).catch(function () {}); return; } // dọn Tower đã hết hạn
-      next[id] = { id: id, server: String(v.server), map: String(v.map), coords: String(v.coords || ""), owner: String(v.owner || ""), faction: v.faction === "ally" ? "ally" : "enemy", exp: v.exp, edits: v.edits ? 1 : 0 };
+      next[id] = { id: id, server: String(v.server), map: String(v.map), coords: String(v.coords || ""), owner: String(v.owner || ""), faction: v.faction === "ally" ? "ally" : v.faction === "unknown" ? "unknown" : "enemy", exp: v.exp, edits: v.edits ? 1 : 0 };
     });
     towers = next; loaded = true; loadError = ""; fullRender(); checkDupe();
   }, function (e) { loaded = true; loadError = "Mất kết nối dữ liệu (" + (e && e.code || "lỗi") + "). Tải lại trang."; fullRender(); });
 }
 
 /* ---- nhắc ---- */
-var alerted = {}, soundOn = true, alertMin = 10;
+var alerted = {}, soundOn = false, alertMin = 10;
 try { alerted = JSON.parse(localStorage.getItem("tw-alerted") || "{}") || {}; } catch (e) { alerted = {}; }
-try { soundOn = localStorage.getItem("tw-sound") !== "0"; var am = localStorage.getItem("tw-min"); if (am !== null && am !== "") alertMin = +am; } catch (e) {}
-function persist() { try { localStorage.setItem("tw-alerted", JSON.stringify(alerted)); localStorage.setItem("tw-sound", soundOn ? "1" : "0"); localStorage.setItem("tw-min", String(alertMin)); } catch (e) {} }
+try { var am = localStorage.getItem("tw-min"); if (am !== null && am !== "") alertMin = +am; } catch (e) {}
+function persist() { try { localStorage.setItem("tw-alerted", JSON.stringify(alerted)); localStorage.setItem("tw-min", String(alertMin)); } catch (e) {} }
 var audioCtx = null;
 function beep() {
   if (!soundOn) return;
@@ -428,7 +452,7 @@ function rowHtml(t, now) {
   var prep = b === "hot" ? '<div class="prep" data-to="' + t.exp + '">' + ms2(left) + '</div>' : '';
   return '<div class="row b-' + b + '" data-id="' + esc(t.id) + '">' +
     '<div class="c-where"><div class="srv">Sv' + esc(t.server) + (isRandom(t.server) ? '<span class="rd">Random</span>' : '') + '</div><div class="mapline"><span class="m">' + esc(t.map) + '</span><span>' + esc(t.coords) + '</span></div></div>' +
-    '<div class="c-owner"><div class="owner">' + (esc(t.owner) || "—") + '</div><span class="ph ' + t.faction + '">' + (t.faction === "ally" ? "Ally" : "Enemy") + '</span>' + (t.edits ? '<span class="ed">Đã sửa</span>' : '') + '</div>' +
+    '<div class="c-owner"><div class="owner">' + (esc(t.owner) || "—") + '</div><span class="ph ' + t.faction + '">' + FACT_LB[t.faction] + '</span>' + (t.edits ? '<span class="ed">Đã sửa</span>' : '') + '</div>' +
     '<div class="c-at at"><div class="t">' + tOf(t.exp) + '</div><div class="d">' + dShort(t.exp) + '</div></div>' +
     '<div class="c-left left" data-at="' + t.exp + '">' + hms(Math.max(0, left)) + '</div>' +
     '<div class="c-prep' + (prep ? "" : " none") + '">' + prep + '</div></div>';
@@ -452,8 +476,13 @@ function fullRender() {
   }
   $("rows").innerHTML = html;
   var live = all.filter(function (t) { return t.exp > now; }); // chỉ đếm Tower đang chạy
-  var en = live.filter(function (t) { return t.faction === "enemy"; }).length;
-  $("chips").innerHTML = '<span class="chip"><b>' + live.length + '</b> tổng Tower</span><span class="chip enemy"><b>' + en + '</b> Enemy</span><span class="chip ally"><b>' + (live.length - en) + '</b> Ally</span>';
+  var en = 0, al = 0, un = 0;
+  live.forEach(function (t) { if (t.faction === "enemy") en++; else if (t.faction === "ally") al++; else un++; });
+  var tot = Math.max(TOTAL_TOWERS, live.length), nf = tot - live.length;
+  $("stats").innerHTML =
+    '<div class="side a"><b>' + al + '</b><span>Ally</span></div>' +
+    '<div class="mid"><b>' + tot + '</b><span class="t">TOTAL TOWERS</span><div class="sub"><span class="u"><b>' + un + '</b>Unknown</span><span class="n"><b>' + nf + '</b>Not Found</span></div></div>' +
+    '<div class="side e"><b>' + en + '</b><span>Enemy</span></div>';
   lastSig = sig(list, now);
 }
 function sig(list, now) { return list.map(function (t) { return t.id + t.exp + t.edits + bucket(t, now) + (now - (t.exp + GRACE) > PAST_MS ? "p" : ""); }).join(","); }
@@ -487,10 +516,6 @@ function tick() {
   });
   $("alertMin").value = String(alertMin); if ($("alertMin").value !== String(alertMin)) $("alertMin").value = "10";
   $("alertMin").addEventListener("change", function () { alertMin = +this.value; persist(); });
-  var sb = $("soundBtn");
-  function sbl() { sb.textContent = "Tiếng: " + (soundOn ? "bật" : "tắt"); sb.setAttribute("aria-pressed", String(soundOn)); }
-  sb.addEventListener("click", function () { soundOn = !soundOn; persist(); sbl(); if (soundOn) beep(); });
-  sbl();
 })();
 /* ---- máy tính ngọc ---- */
 var GEM_STEP = [5,7,10,14,19,25,31,38,45,54,62,72,82,92,103,115,127,140,153,166,180,195,210,226,241,258,275,292,310,328,347,366,385,405,425,446,467,488,510,533,555,578,602,626];
@@ -576,7 +601,7 @@ $("scrim").addEventListener("mousedown", function (e) { if (e.target === this) c
 document.addEventListener("keydown", function (e) { if (e.key !== "Escape") return; if (!$("confirmScrim").hidden) { pending = null; $("confirmScrim").hidden = true; return; } if (!$("scrim").hidden) closePanel(); if (!$("calcScrim").hidden) $("calcScrim").hidden = true; });
 
 var pending = null;
-function descTower(t) { return { v: (t.owner || "?") + " · " + (t.faction === "ally" ? "Ally" : "Enemy"), r: "Toạ độ " + (t.coords || "—") + " · hết hạn " + tOf(t.exp) + " " + dShort(t.exp) }; }
+function descTower(t) { return { v: (t.owner || "?") + " · " + FACT_LB[t.faction], r: "Toạ độ " + (t.coords || "—") + " · hết hạn " + tOf(t.exp) + " " + dShort(t.exp) }; }
 function friendly(e) {
   var c = e && (e.code || e.message) || "lỗi";
   return /PERMISSION_DENIED|permission/i.test(String(c)) ? "Không lưu được: Tower này vừa được người khác sửa hoặc đã bị khoá. Tải lại trang rồi kiểm tra." : "Không lưu được (" + c + "). Thử lại.";
